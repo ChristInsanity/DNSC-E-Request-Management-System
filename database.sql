@@ -1,6 +1,6 @@
 -- Create database
-CREATE DATABASE IF NOT EXISTS dnsc_E-Request;
-USE dnsc_E-Request;
+CREATE DATABASE IF NOT EXISTS `dnsc_E-Request`;
+USE `dnsc_E-Request`;
 
 -- Users table for authentication
 CREATE TABLE IF NOT EXISTS users (
