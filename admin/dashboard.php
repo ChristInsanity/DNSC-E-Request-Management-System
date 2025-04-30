@@ -15,6 +15,12 @@ $approvedRequests = $result->fetch_assoc()['approved'];
 $result = $conn->query("SELECT COUNT(*) as completed FROM requests WHERE status = 'completed'");
 $completedRequests = $result->fetch_assoc()['completed'];
 
+// Count unseen pending requests (for badge)
+$unseenStmt = $conn->prepare("SELECT COUNT(*) as unseen FROM requests WHERE status = 'pending' AND is_seen = 0");
+$unseenStmt->execute();
+$unseenResult = $unseenStmt->get_result();
+$unseenCount = $unseenResult->fetch_assoc()['unseen'];
+
 // Get latest requests
 $stmt = $conn->query("
     SELECT r.*, u.full_name 
@@ -42,6 +48,7 @@ $latestRequests = $stmt->fetch_all(MYSQLI_ASSOC);
         }
         .nav-link {
             color: rgba(255,255,255,.8);
+            position: relative;
         }
         .nav-link:hover {
             color: white;
@@ -71,13 +78,26 @@ $latestRequests = $stmt->fetch_all(MYSQLI_ASSOC);
             border-color: #198754;
             color: white;
         }
+
+        .badge-notification {
+            position: absolute;
+            top: 5px;
+            right: 15px;
+            background-color: red;
+            color: white;
+            font-size: 0.6rem;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 50%;
+        }
+
     </style>
 </head>
 <body>
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar -->
-            <div class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+            <div class="col-md-3 col-lg-2 d-md-block sidebar">
                 <div class="position-sticky pt-3">
                     <div class="text-center mb-4">
                         <h5>DNSC E-Request System</h5>
@@ -96,10 +116,13 @@ $latestRequests = $stmt->fetch_all(MYSQLI_ASSOC);
                                 All Requests
                             </a>
                         </li>
-                        <li class="nav-item">
+                        <li class="nav-item position-relative">
                             <a class="nav-link" href="pending.php">
                                 <i class="fas fa-clock me-2"></i>
                                 Pending Requests
+                                <?php if ($unseenCount > 0): ?>
+                                    <span class="badge-notification"><?php echo $unseenCount; ?></span>
+                                <?php endif; ?>
                             </a>
                         </li>
                         <li class="nav-item">
