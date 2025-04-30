@@ -352,7 +352,7 @@ if (isset($_SESSION['user_id'])) {
                     <div class="card team-card">
                         <div class="card-body text-center p-4">
                             <div class="rounded-circle overflow-hidden mx-auto mb-3" style="width: 120px; height: 120px; background-color: #e9ecef;">
-                                <img src="assets/img/ako.jpg" alt="John Lloyd C. Lozada" class="img-fluid" style="width: 100%; height: 100%; object-fit: cover;">
+                                <img src="assets/img/ako.jpg" alt="John Lyold C. Lozada" class="img-fluid" style="width: 100%; height: 100%; object-fit: cover;">
                             </div>
                             <h5 class="card-title">John Lyold C. Lozada</h5>
                             <p class="card-text text-muted">Backend Developer</p>
