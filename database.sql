@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS requests (
     request_type VARCHAR(100) NOT NULL,
     details TEXT,
     status ENUM('pending', 'approved', 'rejected', 'completed') DEFAULT 'pending',
+    is_seen BOOLEAN DEFAULT 0,
     tracking_number VARCHAR(20),
     pickup_datetime DATETIME,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
