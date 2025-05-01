@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS requests (
 );
 
 
+
 -- Notifications table
 CREATE TABLE IF NOT EXISTS notifications (
     id INT AUTO_INCREMENT PRIMARY KEY,
