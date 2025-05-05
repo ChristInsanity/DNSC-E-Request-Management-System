@@ -548,12 +548,12 @@ if (isset($_SESSION['user_id'])) {
                             <div class="rounded-circle overflow-hidden mx-auto mb-4" style="width: 140px; height: 140px; background-color: #e9ecef;">
                                 <img src="assets/img/Duran.jpg" alt="Christian Duran" class="img-fluid" style="width: 100%; height: 100%; object-fit: cover;">
                             </div>
-                            <h5 class="card-title fw-bold">Christian Duran</h5>
+                            <h5 class="card-title fw-bold">Christian Dave Duran</h5>
                             <p class="card-text text-muted mb-3">Project Leader</p>
                             <div class="d-flex justify-content-center gap-2">
                                 <a href="https://www.facebook.com/christian.duran.827309" class="btn btn-sm btn-outline-success rounded-circle"><i class="fab fa-facebook"></i></a>
                                 <a href="https://github.com/ChristInsanity" class="btn btn-sm btn-outline-success rounded-circle"><i class="fab fa-github"></i></a>
-                                <a href="" class="btn btn-sm btn-outline-success rounded-circle"><i class="fas fa-envelope"></i></a>
+                                <a href="mailto:duran.christiandave@dnsc.edu.ph" class="btn btn-sm btn-outline-success rounded-circle"><i class="fas fa-envelope"></i></a>
                             </div>
                         </div>
                     </div>
@@ -570,7 +570,7 @@ if (isset($_SESSION['user_id'])) {
                             <div class="d-flex justify-content-center gap-2">
                                 <a href="https://www.facebook.com/DeJure12705" class="btn btn-sm btn-outline-success rounded-circle"><i class="fab fa-facebook"></i></a>
                                 <a href="https://github.com/DeJure12705" class="btn btn-sm btn-outline-success rounded-circle"><i class="fab fa-github"></i></a>
-                                <a href="#" class="btn btn-sm btn-outline-success rounded-circle"><i class="fas fa-envelope"></i></a>
+                                <a href="mailto:lozada.johnlyold@dnsc.edu.ph" class="btn btn-sm btn-outline-success rounded-circle"><i class="fas fa-envelope"></i></a>
                             </div>
                         </div>
                     </div>
@@ -587,7 +587,7 @@ if (isset($_SESSION['user_id'])) {
                             <div class="d-flex justify-content-center gap-2">
                                 <a href="https://www.facebook.com/arjean.logrosa" class="btn btn-sm btn-outline-success rounded-circle"><i class="fab fa-facebook"></i></a>
                                 <a href="https://github.com/aj-u3u" class="btn btn-sm btn-outline-success rounded-circle"><i class="fab fa-github"></i></a>
-                                <a href="#" class="btn btn-sm btn-outline-success rounded-circle"><i class="fas fa-envelope"></i></a>
+                                <a href="mailto:logrosa.arjean@dnsc.edu.ph" class="btn btn-sm btn-outline-success rounded-circle"><i class="fas fa-envelope"></i></a>
                             </div>
                         </div>
                     </div>
@@ -604,7 +604,7 @@ if (isset($_SESSION['user_id'])) {
                             <div class="d-flex justify-content-center gap-2">
                                 <a href="https://www.facebook.com/ezraheli" class="btn btn-sm btn-outline-success rounded-circle"><i class="fab fa-facebook"></i></a>
                                 <a href="https://github.com/Ezraheli" class="btn btn-sm btn-outline-success rounded-circle"><i class="fab fa-github"></i></a>
-                                <a href="#" class="btn btn-sm btn-outline-success rounded-circle"><i class="fas fa-envelope"></i></a>
+                                <a href="mailto:losabia.stephaniekate@dnsc.edu.ph" class="btn btn-sm btn-outline-success rounded-circle"><i class="fas fa-envelope"></i></a>
                             </div>
                         </div>
                     </div>
@@ -666,7 +666,7 @@ if (isset($_SESSION['user_id'])) {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
     <script>
-        // Initialize AOS (Animate on Scroll)
+        // Initialize AOS
         AOS.init({
             once: true,
             duration: 800

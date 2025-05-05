@@ -397,7 +397,7 @@ if (!in_array($request['status'], ['approved', 'completed'])) {
     
     <script>
         document.getElementById('printBtn').addEventListener('click', function() {
-            // Keep the print function simple
+            
             window.print();
         });
     </script>

@@ -128,7 +128,7 @@ $total_pages = ceil($total_records / $limit);
                                 Notifications
                             </a>
                         </li> 
-                        <!-- Logout removed from sidebar -->
+                    
                     </ul>
                 </div>
             </div>
