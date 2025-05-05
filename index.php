@@ -29,6 +29,144 @@ if (isset($_SESSION['user_id'])) {
             overflow-x: hidden;
         }
         
+        /* Improved Navbar Styling */
+        .navbar {
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.2);
+            padding: 15px 0;
+            transition: all 0.4s ease;
+            background: linear-gradient(135deg, #2d5516 20%, #388e3c 100%) !important;
+        }
+        
+        .navbar.scrolled {
+            padding: 8px 0;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            background: #2d5516 !important;
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            transition: transform 0.3s ease;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+        
+        .navbar-brand:hover {
+            transform: translateY(-2px);
+        }
+        
+        .navbar-brand img {
+            height: 40px;
+            margin-right: 10px;
+            filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.2));
+        }
+        
+        .nav-item {
+            margin: 0 5px;
+            position: relative;
+        }
+        
+        .nav-link {
+            font-weight: 500;
+            padding: 10px 15px !important;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            color: rgba(255, 255, 255, 0.9) !important;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+            color: white !important;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            background-color: #fff;
+            bottom: 5px;
+            left: 15px;
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after, .nav-link.active::after {
+            width: calc(100% - 30px);
+        }
+        
+        /* Improved Button Styling */
+        .navbar .btn {
+            padding: 8px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .navbar .btn-success {
+            background-color: #498428;
+            border-color: #498428;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .navbar .btn-success:hover {
+            background-color: #549a2d;
+            border-color: #549a2d;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+            transform: translateY(-2px);
+        }
+        
+        .navbar .btn-outline-light {
+            border-width: 2px;
+        }
+        
+        .navbar .btn-outline-light:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Mobile nav toggler */
+        .navbar-toggler {
+            border: none;
+            padding: 10px;
+            margin-right: 5px;
+            position: relative;
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .navbar-toggler:focus {
+            box-shadow: none;
+            outline: none;
+        }
+        
+        .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.85%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+        
+        /* For mobile */
+        @media (max-width: 991px) {
+            .navbar-collapse {
+                background-color: #2d5516;
+                padding: 15px;
+                border-radius: 10px;
+                margin-top: 10px;
+                box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+            }
+            
+            .nav-link::after {
+                display: none;
+            }
+            
+            .navbar .btn {
+                margin-top: 10px;
+                display: block;
+                width: 100%;
+            }
+        }
+        
         /* Improved Hero Section */
         .hero-section {
             background: linear-gradient(135deg, #2d5516 20%, #4caf50 100%);
@@ -146,23 +284,6 @@ if (isset($_SESSION['user_id'])) {
             justify-content: center;
             border-radius: 50%;
             box-shadow: 0 4px 10px rgba(56, 142, 60, 0.3);
-        }
-        
-        /* Navbar Improvements */
-        .navbar {
-            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
-            padding: 15px 0;
-            transition: all 0.3s;
-        }
-        
-        .navbar.scrolled {
-            padding: 10px 0;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
-        }
-        
-        .navbar-brand {
-            font-weight: 700;
-            font-size: 1.5rem;
         }
         
         /* Button Styling */
@@ -293,19 +414,19 @@ if (isset($_SESSION['user_id'])) {
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
         <div class="container">
             <a class="navbar-brand" href="#">
-                <i class="fas fa-file-alt me-2"></i>
+                <img src="assets/img/dnsc-logo.png" alt="DNSC Logo" class="d-inline-block align-text-top">
                 DNSC E-Request
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav ms-auto align-items-center">
                     <li class="nav-item">
-                        <a class="nav-link active" href="#features">Features</a>
+                        <a class="nav-link" href="#features">Features</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#how-it-works">How It Works</a>
@@ -313,7 +434,7 @@ if (isset($_SESSION['user_id'])) {
                     <li class="nav-item">
                         <a class="nav-link" href="#team">Our Team</a>
                     </li>
-                    <li class="nav-item ms-lg-3">
+                    <li class="nav-item ms-lg-2">
                         <a class="btn btn-success" href="login.php">
                             <i class="fas fa-sign-in-alt me-1"></i> Login
                         </a>
@@ -672,7 +793,7 @@ if (isset($_SESSION['user_id'])) {
             duration: 800
         });
         
-        // Navbar scroll effect and back to top button
+        // Improved Navbar scroll effect and back to top button
         window.addEventListener('scroll', function() {
             const navbar = document.querySelector('.navbar');
             const backToTop = document.querySelector('.back-to-top');
@@ -684,6 +805,22 @@ if (isset($_SESSION['user_id'])) {
                 navbar.classList.remove('scrolled');
                 backToTop.classList.remove('active');
             }
+            
+            // Add active class to nav item based on scroll position
+            const sections = document.querySelectorAll('section[id]');
+            const scrollY = window.pageYOffset;
+            
+            sections.forEach(current => {
+                const sectionHeight = current.offsetHeight;
+                const sectionTop = current.offsetTop - 100;
+                const sectionId = current.getAttribute('id');
+                
+                if (scrollY > sectionTop && scrollY <= sectionTop + sectionHeight) {
+                    document.querySelector('.nav-link[href*=' + sectionId + ']').classList.add('active');
+                } else {
+                    document.querySelector('.nav-link[href*=' + sectionId + ']').classList.remove('active');
+                }
+            });
         });
         
         // Back to top functionality
