@@ -43,8 +43,11 @@ $latestRequests = $stmt->fetch_all(MYSQLI_ASSOC);
     <style>
         .sidebar {
             min-height: 100vh;
-            background-color: #198754;
+            background-color: #2d5516;
             color: white;
+        }
+         .custom-topbar {
+         background-color: #2d5516;
         }
         .nav-link {
             color: rgba(255,255,255,.8);
@@ -62,20 +65,20 @@ $latestRequests = $stmt->fetch_all(MYSQLI_ASSOC);
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         .btn-primary {
-            background-color: #198754;
-            border-color: #198754;
+            background-color: #498428;
+            border-color: #498428;
         }
         .btn-primary:hover {
-            background-color: #146c43;
-            border-color: #146c43;
+            background-color: #2d5516;
+            border-color: #2d5516;
         }
         .btn-outline-secondary {
-            color: #198754;
-            border-color: #198754;
+            color: #498428;
+            border-color: #498428;
         }
         .btn-outline-secondary:hover {
-            background-color: #198754;
-            border-color: #198754;
+            background-color: #2d5516;
+            border-color: #2d5516;
             color: white;
         }
 
@@ -90,18 +93,53 @@ $latestRequests = $stmt->fetch_all(MYSQLI_ASSOC);
             padding: 2px 6px;
             border-radius: 50%;
         }
+        .sidebar.collapsed-sidebar {
+            display: none !important;
+        }
+        .main-expanded {
+            width: 100% !important;
+            flex: 0 0 100% !important;
+            max-width: 100% !important;
+        }
 
+        
     </style>
 </head>
 <body>
+    <!-- Topbar/Header -->
+    <nav class="navbar navbar-expand-lg navbar-dark custom-topbar px-3">
+    <div class="container-fluid d-flex justify-content-between align-items-center">
+        
+        <!-- Left section: Brand + Toggle -->
+        <div class="d-flex align-items-center">
+            <!-- Sidebar toggle -->
+            <button class="btn btn-outline-light me-2" id="sidebarToggleTop">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <!-- Brand -->
+            <a class="navbar-brand mb-0 h1" href="#">DNSC E-Request System</a>
+        </div>
+
+    <!-- Profile dropdown (moved to the right) -->
+    <div class="dropdown">
+        <button class="btn btn-outline-light dropdown-toggle btn-sm" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            Welcome, <?php echo $_SESSION['full_name']; ?>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+            <li><a class="dropdown-item" href="../logout.php">Logout</a></li>
+        </ul>
+    </div>
+</nav>
+
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar -->
-            <div class="col-md-3 col-lg-2 d-md-block sidebar">
+            <div class="col-md-3 col-lg-2 sidebar collapse" id="sidebar">
                 <div class="position-sticky pt-3">
                     <div class="text-center mb-4">
-                        <h5>DNSC E-Request System</h5>
-                        <p class="text-muted">Admin Panel</p>
+                        <h5>Admin Portal</h5>
+                        <!-- <p class="text-white">Admin Panel</p> -->
                     </div>
                     <ul class="nav flex-column">
                         <li class="nav-item">
@@ -137,31 +175,20 @@ $latestRequests = $stmt->fetch_all(MYSQLI_ASSOC);
                                 Completed Requests
                             </a>
                         </li>
-                        <li class="nav-item mt-5">
-                            <a class="nav-link" href="../logout.php">
-                                <i class="fas fa-sign-out-alt me-2"></i>
-                                Logout
-                            </a>
-                        </li>
                     </ul>
                 </div>
             </div>
 
             <!-- Main content -->
-            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+            <main class="col-12 px-md-4 py-4" id="main-content">
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                    <h1 class="h2">Admin Dashboard</h1>
-                    <div class="btn-toolbar mb-2 mb-md-0">
-                        <div class="btn-group me-2">
-                            <span class="btn btn-sm btn-outline-secondary">Welcome, <?php echo $_SESSION['full_name']; ?></span>
-                        </div>
-                    </div>
+                        <h1 class="h2 mb-0">Admin Dashboard</h1>
                 </div>
 
                 <!-- Stats Cards -->
                 <div class="row my-4">
                     <div class="col-md-3 mb-4">
-                        <div class="card dashboard-card bg-success text-white">
+                        <div class="card dashboard-card "style="background-color: #2d5516; color: white">
                             <div class="card-body d-flex justify-content-between align-items-center">
                                 <div>
                                     <h5 class="card-title">Total Requests</h5>
@@ -172,7 +199,7 @@ $latestRequests = $stmt->fetch_all(MYSQLI_ASSOC);
                         </div>
                     </div>
                     <div class="col-md-3 mb-4">
-                        <div class="card dashboard-card" style="background-color: #20c997; color: white;">
+                        <div class="card dashboard-card" style="background-color: #498428; color: white;">
                             <div class="card-body d-flex justify-content-between align-items-center">
                                 <div>
                                     <h5 class="card-title">Pending</h5>
@@ -183,7 +210,7 @@ $latestRequests = $stmt->fetch_all(MYSQLI_ASSOC);
                         </div>
                     </div>
                     <div class="col-md-3 mb-4">
-                        <div class="card dashboard-card" style="background-color: #2dd4bf; color: white;">
+                        <div class="card dashboard-card" style="background-color: #749E35; color: white;">
                             <div class="card-body d-flex justify-content-between align-items-center">
                                 <div>
                                     <h5 class="card-title">Approved</h5>
@@ -194,7 +221,7 @@ $latestRequests = $stmt->fetch_all(MYSQLI_ASSOC);
                         </div>
                     </div>
                     <div class="col-md-3 mb-4">
-                        <div class="card dashboard-card" style="background-color: #15803d; color: white;">
+                        <div class="card dashboard-card" style="background-color: #B3CC50; color: white;">
                             <div class="card-body d-flex justify-content-between align-items-center">
                                 <div>
                                     <h5 class="card-title">Completed</h5>
@@ -263,5 +290,24 @@ $latestRequests = $stmt->fetch_all(MYSQLI_ASSOC);
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+    document.getElementById('sidebarToggleTop').addEventListener('click', function () {
+        var sidebar = document.getElementById('sidebar');
+        var main = document.getElementById('main-content');
+
+        sidebar.classList.toggle('show');
+
+        if (sidebar.classList.contains('show')) {
+            main.classList.remove('col-12');
+            main.classList.add('col-md-9', 'col-lg-10');
+        } else {
+            main.classList.remove('col-md-9', 'col-lg-10');
+            main.classList.add('col-12');
+        }
+    });
+</script>
+
+
 </body>
 </html>

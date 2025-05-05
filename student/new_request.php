@@ -43,12 +43,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['confirm_submit'])) {
             background-color: #f8f9fa;
         }
         .btn-primary {
-            background-color: #198754;
-            border-color: #198754;
+            background-color: #498428;
+            border-color: #498428;
         }
         .btn-primary:hover {
-            background-color: #146c43;
-            border-color: #146c43;
+            background-color: #2d5516;
+            border-color: #2d5516;
         }
         .btn-danger {
             background-color: #dc3545;
@@ -59,14 +59,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['confirm_submit'])) {
             border-color: #b02a37;
         }
         .modal-header {
-            background-color: #198754;
+            background-color: #2d5516;
             color: white;
         }
         .modal-body p {
             margin-bottom: 10px;
             padding: 8px;
             background-color: #f1fdf6;
-            border-left: 5px solid #198754;
+            border-left: 5px solid #2d5516;
         }
     </style>
 </head>
@@ -75,7 +75,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['confirm_submit'])) {
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card shadow">
-                <div class="card-header bg-success text-white">
+                <div class="card-header text-white" style="background-color: #2d5516">
                     <h4 class="mb-0">Submit a New Request</h4>
                 </div>
                 <div class="card-body">
@@ -175,7 +175,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['confirm_submit'])) {
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Edit</button>
-                    <button type="submit" class="btn btn-success">Confirm & Submit</button>
+                    <button type="submit" class="btn" style="background-color: #2d5516; color: white;">Confirm & Submit</button>
+
                 </div>
             </form>
         </div>
@@ -193,7 +194,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['confirm_submit'])) {
                 <p>Your request has been submitted successfully!</p>
             </div>
             <div class="modal-footer">
-                <a href="dashboard.php" class="btn btn-success">OK</a>
+                <a href="dashboard.php" class="btn" style="background-color: #2d5516; color: white;">OK</a>
             </div>
         </div>
     </div>

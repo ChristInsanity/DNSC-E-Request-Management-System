@@ -28,7 +28,7 @@ if (isset($_SESSION['user_id'])) {
         }
         
         .hero-section {
-            background: linear-gradient(135deg, #198754 0%, #20c997 100%);
+            background: linear-gradient(135deg, #2d5516 20%, #c1d95c 100%);
             color: white;
             padding: 80px 0;
             border-radius: 0 0 20px 20px;
@@ -55,7 +55,7 @@ if (isset($_SESSION['user_id'])) {
         
         .feature-icon {
             font-size: 2.5rem;
-            color: #198754;
+            color: #498428;
             margin-bottom: 15px;
         }
         
@@ -66,23 +66,24 @@ if (isset($_SESSION['user_id'])) {
         }
         
         .btn-success {
-            background-color: #198754;
-            border-color: #198754;
+            background-color: #498428;
+            border-color: #498428;
+            margin-bottom: 10px;
         }
         
         .btn-success:hover {
-            background-color: #146c43;
-            border-color: #146c43;
+            background-color: #2d5516;
+            border-color: #2d5516;
         }
         
         .btn-outline-success {
-            color: #198754;
-            border-color: #198754;
+            color: #498428;
+            border-color: #498428;
         }
         
         .btn-outline-success:hover {
-            background-color: #198754;
-            border-color: #198754;
+            background-color: #2d5516;
+            border-color: #2d5516;
         }
         
         .footer {
@@ -181,7 +182,7 @@ if (isset($_SESSION['user_id'])) {
                     </div>
                 </div>
                 <div class="col-lg-6 d-none d-lg-block">
-                    <img src="" alt="E-Request System" class="img-fluid rounded shadow-lg">
+                    <img src="assets/img/DNSC_thumbnail.png" alt="E-Request System" class="img-fluid rounded shadow-lg">
                 </div>
             </div>
         </div>
@@ -272,7 +273,7 @@ if (isset($_SESSION['user_id'])) {
                     <div class="card border-0 shadow-sm">
                         <div class="card-body p-4">
                             <div class="d-flex mb-4">
-                                <div class="bg-success text-white rounded-circle p-3 me-3" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">
+                                <div class="text-white rounded-circle p-3 me-3" style="background-color: #498428; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">
                                     <h4 class="m-0">1</h4>
                                 </div>
                                 <div>
@@ -282,7 +283,7 @@ if (isset($_SESSION['user_id'])) {
                             </div>
                             
                             <div class="d-flex mb-4">
-                                <div class="bg-success text-white rounded-circle p-3 me-3" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">
+                                <div class=" text-white rounded-circle p-3 me-3" style="background-color: #498428; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">
                                     <h4 class="m-0">2</h4>
                                 </div>
                                 <div>
@@ -292,7 +293,7 @@ if (isset($_SESSION['user_id'])) {
                             </div>
                             
                             <div class="d-flex mb-4">
-                                <div class="bg-success text-white rounded-circle p-3 me-3" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">
+                                <div class=" text-white rounded-circle p-3 me-3" style="background-color: #498428; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">
                                     <h4 class="m-0">3</h4>
                                 </div>
                                 <div>
@@ -302,7 +303,7 @@ if (isset($_SESSION['user_id'])) {
                             </div>
                             
                             <div class="d-flex mb-4">
-                                <div class="bg-success text-white rounded-circle p-3 me-3" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">
+                                <div class=" text-white rounded-circle p-3 me-3" style="background-color: #498428; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">
                                     <h4 class="m-0">4</h4>
                                 </div>
                                 <div>
@@ -312,7 +313,7 @@ if (isset($_SESSION['user_id'])) {
                             </div>
                             
                             <div class="d-flex">
-                                <div class="bg-success text-white rounded-circle p-3 me-3" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">
+                                <div class=" text-white rounded-circle p-3 me-3" style="background-color: #498428; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">
                                     <h4 class="m-0">5</h4>
                                 </div>
                                 <div>
@@ -376,7 +377,7 @@ if (isset($_SESSION['user_id'])) {
                     <div class="card team-card">
                         <div class="card-body text-center p-4">
                             <div class="rounded-circle overflow-hidden mx-auto mb-3" style="width: 120px; height: 120px; background-color: #e9ecef;">
-                                <img src="assets/img/Kent.jpg" alt="Stephanie Kate O. Losabia" class="img-fluid" style="width: 100%; height: 100%; object-fit: cover;">
+                                <img src="assets/img/stephanie.jpg" alt="Stephanie Kate O. Losabia" class="img-fluid" style="width: 100%; height: 100%; object-fit: cover;">
                             </div>
                             <h5 class="card-title">Stephanie Kate O. Losabia</h5>
                             <p class="card-text text-muted">UI/UX Designer</p>
@@ -442,7 +443,7 @@ if (isset($_SESSION['user_id'])) {
                     <ul class="list-unstyled">
                         <li class="mb-2"><i class="fas fa-map-marker-alt me-2"></i>Davao del Norte State College</li>
                         <li class="mb-2"><i class="fas fa-phone me-2"></i>+63 951 229 7022</li>
-                        <li><i class="fas fa-envelope me-2"></i>supplybridge@dnsc.edu.ph</li>
+                        <li><i class="fas fa-envelope me-2"></i>DNSC E-Request@dnsc.edu.ph</li>
                     </ul>
                 </div>
             </div>
