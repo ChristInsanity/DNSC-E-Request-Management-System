@@ -155,6 +155,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <style>
         body {
             background-color: #f8f9fa;
+            background: linear-gradient(to left,#336A29,#283618);
         }
         .register-container {
             max-width: 550px;
@@ -165,32 +166,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         .card-header {
-            background-color: #198754;
+            background-color: #336A29;
             color: white;
             border-radius: 10px 10px 0 0 !important;
         }
         .btn-primary {
             width: 100%;
-            background-color: #198754;
-            border-color: #198754;
+            background-color: #336A29;
+            border-color: #336A29;
         }
         .btn-primary:hover {
-            background-color: #146c43;
-            border-color: #146c43;
+            background-color: #283618;
+            border-color: #283618;
         }
         .btn-success {
-            background-color: #198754;
-            border-color: #198754;
+            background-color: #336A29;
+            border-color: #336A29;
         }
         .btn-success:hover {
-            background-color: #146c43;
-            border-color: #146c43;
+            background-color: #283618;
+            border-color: #283618;
         }
         a {
-            color: #198754;
+            color: #DDA15E;
         }
         a:hover {
-            color: #146c43;
+            color: #BC6C25;
         }
         .form-control:focus {
             border-color: #198754;
@@ -229,6 +230,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <?php else: ?>
                 
                 <form id="registerForm" method="POST" action="" novalidate>
+                    <div class="mb-3">
+                        <label for="user_type" class="form-label">User Type</label>
+                        <select class="form-select" id="user_type" name="user_type" required>
+                            <option value="student" <?php echo ($formData['user_type'] ?? '') === 'student' ? 'selected' : ''; ?>>Student</option>
+                            <option value="graduate" <?php echo ($formData['user_type'] ?? '') === 'graduate' ? 'selected' : ''; ?>>Graduate</option>
+                        </select>
+                        
+
+                    </div>
                     <div class="mb-3">
                         <label for="full_name" class="form-label">Full Name</label>
                         <input type="text" class="form-control" id="full_name" name="full_name" value="<?php echo htmlspecialchars($formData['full_name']); ?>" required>
