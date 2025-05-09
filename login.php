@@ -10,7 +10,7 @@ if (isLoggedIn()) {
     } elseif (isAlumni()) {
         redirect('alumni/dashboard.php');
     } else {
-        redirect('select_role.php'); // Handle null or unknown roles
+        redirect('select_role.php');
     }
 }
 
@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } elseif ($user['role'] === 'alumni') {
                 redirect('alumni/dashboard.php');
             } else {
-                redirect('select_role.php'); // Redirect if role is NULL or unknown
+                redirect('select_role.php');
             }
         } else {
             $error = 'Invalid password';
