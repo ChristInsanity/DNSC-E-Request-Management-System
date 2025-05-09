@@ -12,11 +12,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['registerbtn'])) {
     $email = trim($_POST['email']);
     $password = $_POST['password'];
     $confirm_password = $_POST['confirm_password'];
-    $pre_select_role = $_POST['pre_selected_role'];
+    $pre_select_role = isset($_POST['pre_selected_role']) ? $_POST['pre_selected_role'] : '';
     $photo = $_FILES['photo'];
 
     $validationErrors = [];
 
+    // Validate inputs
     if (empty($full_name)) $validationErrors[] = 'Full name is required.';
     if (empty($stud_id)) $validationErrors[] = 'Student ID is required.';
     if (empty($institute)) $validationErrors[] = 'Institute is required.';
@@ -27,6 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['registerbtn'])) {
     if (empty($pre_select_role)) $validationErrors[] = 'Role is required.';
     if ($photo['error'] !== 0) $validationErrors[] = 'Photo upload failed.';
 
+    // Check if email exists
     $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
@@ -35,6 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['registerbtn'])) {
     $stmt->close();
 
     if (empty($validationErrors)) {
+        // Upload photo
         $uploadDir = "uploads/";
         $photoName = uniqid() . '_' . basename($photo['name']);
         $targetFile = $uploadDir . $photoName;
@@ -42,15 +45,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['registerbtn'])) {
 
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
+        // Insert into users table
         $stmt = $conn->prepare("INSERT INTO users (stud_id, full_name, institute, program, email, password, uploadphoto, verification_status, pre_select_role, role, created_at) 
         VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, NULL, NOW())");
-        $stmt->bind_param("ssssssss", $stud_id, $full_name, $institute, $program, $email, $hashed_password, $photoName, $pre_select_role);
+        $stmt->bind_param("ssssssss", $stud_id, $full_name, $institute, $program, $email, $hashed_password, $photoName, $pre_select_role);    
 
         if ($stmt->execute()) {
-            echo "<script>
-                setTimeout(() => { window.location.href = 'login.php'; }, 3000);
-            </script>";
-            $success = "Registration successful! Redirecting to login in 3 seconds...";
+            $success = "Registration successful! Please wait for admin verification.";
+
+            // Redirect to login page immediately after successful registration
+            header("Location: login.php");
+            exit(); // Make sure no further code is executed after the redirect
         } else {
             $error = "Something went wrong. Please try again.";
         }
@@ -61,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['registerbtn'])) {
 }
 ?>
 
-
+<!-- HTML START -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -69,6 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['registerbtn'])) {
     <title>Register - DNSC E-Request</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
+<<<<<<< HEAD
          :root {
             --primary: #2d5516;
             --secondary: #C1D95C;
@@ -124,6 +130,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['registerbtn'])) {
         .modal-lg { 
             max-width: 450px;
         }
+=======
+        body { background-color: #f8f9fa; }
+        .register-container { max-width: 600px; margin: 50px auto; }
+        .card { border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .card-header { background-color: #198754; color: white; }
+        .btn-primary { width: 100%; background-color: #198754; }
+>>>>>>> parent of 590c157 (Some enhancement)
     </style>
 </head>
 <body>
@@ -186,25 +199,84 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['registerbtn'])) {
             </script>
 <!-- wala pa na implement -->
 
+<<<<<<< HEAD
                     <div class="mb-3">
                         <label for="full_name" class="form-label">Full Name</label>
                         <input type="text" class="form-control" id="full_name" name="full_name" value="<?php echo htmlspecialchars($formData['full_name']); ?>" required>
                         <div class="invalid-feedback">Please enter your full name</div>
-                    </div>
+=======
+            <form action="register.php" method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label>Fullname</label>
+                    <input type="text" name="full_name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Student ID</label>
+                    <input type="text" name="stud_id" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Institute</label>
+                    <select name="institute" id="institute" class="form-control" required onchange="updatePrograms()">
+                        <option value="" disabled selected>Select Institute</option>
+                        <option value="IC">Institute of Computing</option>
+                        <option value="IE">Institute of Engineering</option>
+                        <option value="IT">Institute of Teacher Education</option>
+                        <option value="IAS">Institute of Arts and Sciences</option>
+                        <option value="IM">Institute of Management</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Program</label>
+                    <select name="program" id="program" class="form-control" required>
+                        <option value="" disabled selected>Select Program</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" name="email" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" name="password" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Confirm Password</label>
+                    <input type="password" name="confirm_password" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Upload Photo</label>
+                    <input type="file" name="photo" class="form-control-file" required>
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select name="pre_selected_role" class="form-control" required>
+                        <option value="" disabled selected>Select Status</option>
+                        <option value="student">Current Student</option>
+                        <option value="alumni">Alumni/Graduate</option>
+                    </select>
                 </div>
 
-                <!-- Image Modal -->
-                <div class="modal fade" id="imageModal" tabindex="-1" role="dialog">
-                    <div class="modal-dialog modal-lg" role="document">
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#confirmModal">
+                    Confirm
+                </button>
+
+                <!-- Confirmation Modal -->
+                <div class="modal fade" id="confirmModal" tabindex="-1" role="dialog">
+                    <div class="modal-dialog" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title">Photo Preview</h5>
+                                <h5 class="modal-title">Confirm Submission</h5>
                                 <button type="button" class="close" data-dismiss="modal">&times;</button>
                             </div>
-                            <div class="modal-body text-center">
-                                <img id="modal-img" src="" class="img-fluid" />
+                            <div class="modal-body">
+                                Are you sure you want to submit this registration form?
+                            </div>
+                            <div class="modal-footer">
+                                <button type="submit" name="registerbtn" class="btn btn-success">Yes, Submit</button>
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">No, Cancel</button>
                             </div>
                         </div>
+>>>>>>> parent of 590c157 (Some enhancement)
                     </div>
                 </div>
 
@@ -236,36 +308,10 @@ function updatePrograms() {
         });
     }
 }
-
-function validateAndShowModal() {
-    const form = document.getElementById('registerForm');
-    if (form.checkValidity()) {
-        $('#confirmModal').modal('show');
-    } else {
-        form.reportValidity();
-    }
-}
-
-function previewPhoto(input) {
-    const preview = document.getElementById('preview-img');
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            preview.src = e.target.result;
-            preview.style.display = 'block';
-        };
-        reader.readAsDataURL(input.files[0]);
-    }
-}
-
-function openImageModal() {
-    const src = document.getElementById('preview-img').src;
-    document.getElementById('modal-img').src = src;
-    $('#imageModal').modal('show');
-}
 </script>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>
