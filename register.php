@@ -75,6 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['registerbtn'])) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
 <<<<<<< HEAD
+<<<<<<< HEAD
          :root {
             --primary: #2d5516;
             --secondary: #C1D95C;
@@ -131,11 +132,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['registerbtn'])) {
             max-width: 450px;
         }
 =======
+=======
+>>>>>>> parent of 590c157 (Some enhancement)
         body { background-color: #f8f9fa; }
         .register-container { max-width: 600px; margin: 50px auto; }
         .card { border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
         .card-header { background-color: #198754; color: white; }
         .btn-primary { width: 100%; background-color: #198754; }
+<<<<<<< HEAD
+>>>>>>> parent of 590c157 (Some enhancement)
+=======
 >>>>>>> parent of 590c157 (Some enhancement)
     </style>
 </head>
@@ -200,11 +206,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['registerbtn'])) {
 <!-- wala pa na implement -->
 
 <<<<<<< HEAD
+<<<<<<< HEAD
                     <div class="mb-3">
                         <label for="full_name" class="form-label">Full Name</label>
                         <input type="text" class="form-control" id="full_name" name="full_name" value="<?php echo htmlspecialchars($formData['full_name']); ?>" required>
                         <div class="invalid-feedback">Please enter your full name</div>
 =======
+=======
+>>>>>>> parent of 590c157 (Some enhancement)
             <form action="register.php" method="POST" enctype="multipart/form-data">
                 <div class="form-group">
                     <label>Fullname</label>
@@ -276,6 +285,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['registerbtn'])) {
                                 <button type="button" class="btn btn-secondary" data-dismiss="modal">No, Cancel</button>
                             </div>
                         </div>
+<<<<<<< HEAD
+>>>>>>> parent of 590c157 (Some enhancement)
+=======
 >>>>>>> parent of 590c157 (Some enhancement)
                     </div>
                 </div>
