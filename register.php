@@ -51,18 +51,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['registerbtn'])) {
         $stmt->bind_param("ssssssss", $stud_id, $full_name, $institute, $program, $email, $hashed_password, $photoName, $pre_select_role);    
 
         if ($stmt->execute()) {
-<<<<<<< HEAD
-            $success = "Registration successful! Please wait for admin verification.";
-
-            // Redirect to login page immediately after successful registration
-            header("Location: login.php");
-            exit(); // Make sure no further code is executed after the redirect
-=======
             echo "<script>
                 setTimeout(() => { window.location.href = 'login.php'; }, 3000);
             </script>";
             $success = "Registration successful!";
->>>>>>> pr/13/Duran
         } else {
             $error = "Something went wrong. Please try again.";
         }
