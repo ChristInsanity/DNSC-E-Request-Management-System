@@ -51,11 +51,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['registerbtn'])) {
         $stmt->bind_param("ssssssss", $stud_id, $full_name, $institute, $program, $email, $hashed_password, $photoName, $pre_select_role);    
 
         if ($stmt->execute()) {
+<<<<<<< HEAD
             $success = "Registration successful! Please wait for admin verification.";
 
             // Redirect to login page immediately after successful registration
             header("Location: login.php");
             exit(); // Make sure no further code is executed after the redirect
+=======
+            echo "<script>
+                setTimeout(() => { window.location.href = 'login.php'; }, 3000);
+            </script>";
+            $success = "Registration successful!";
+>>>>>>> pr/13/Duran
         } else {
             $error = "Something went wrong. Please try again.";
         }
@@ -134,8 +141,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['registerbtn'])) {
                     <input type="password" name="confirm_password" class="form-control" required>
                 </div>
                 <div class="form-group">
+<<<<<<< HEAD
                     <label>Upload Photo</label>
                     <input type="file" name="photo" class="form-control-file" required>
+=======
+                    <label>Upload IDPhoto</label>
+                    <input type="file" name="photo" class="form-control-file" accept="image/*" onchange="previewPhoto(this)" required>
+                    <img id="preview-img" class="img-thumbnail" onclick="openImageModal()" />
+>>>>>>> pr/13/Duran
                 </div>
                 <div class="form-group">
                     <label>Status</label>
