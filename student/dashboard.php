@@ -2,17 +2,20 @@
 require_once '../config.php';
 checkStudentAuth();
 
-// Get statistics for dashboard using stored procedure
+// Get statistics for dashboard
 $user_id = $_SESSION['user_id'];
 
-$result = callProcedure($conn, 'sp_GetUserRequestsStats', 'i', [$user_id]);
-$stats = $result->fetch_assoc();
+$result = $conn->query("SELECT COUNT(*) as total FROM requests WHERE user_id = $user_id");
+$totalRequests = $result->fetch_assoc()['total'];
 
-$totalRequests = $stats['total_requests'];
-$pendingRequests = $stats['pending_requests'];
-$approvedRequests = $stats['approved_requests'];
-$completedRequests = $stats['completed_requests'];
-$unreadNotifications = $stats['unread_notifications'];
+$result = $conn->query("SELECT COUNT(*) as pending FROM requests WHERE user_id = $user_id AND status = 'pending'");
+$pendingRequests = $result->fetch_assoc()['pending'];
+
+$result = $conn->query("SELECT COUNT(*) as approved FROM requests WHERE user_id = $user_id AND status = 'approved'");
+$approvedRequests = $result->fetch_assoc()['approved'];
+
+$result = $conn->query("SELECT COUNT(*) as completed FROM requests WHERE user_id = $user_id AND status = 'completed'");
+$completedRequests = $result->fetch_assoc()['completed'];
 
 // Get notifications
 $stmt = $conn->prepare("SELECT * FROM notifications WHERE user_id = ? AND is_read = 0 ORDER BY created_at DESC");
@@ -20,9 +23,11 @@ $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $notifications = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
-// Get latest requests using stored procedure
-$result = callProcedure($conn, 'sp_GetUserRecentRequests', 'ii', [$user_id, 5]);
-$latestRequests = $result->fetch_all(MYSQLI_ASSOC);
+// Get latest requests
+$stmt = $conn->prepare("SELECT * FROM requests WHERE user_id = ? ORDER BY created_at DESC LIMIT 5");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$latestRequests = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 ?>
 
 <!DOCTYPE html>
