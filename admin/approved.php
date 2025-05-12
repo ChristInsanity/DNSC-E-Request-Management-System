@@ -2,60 +2,54 @@
 require_once '../config.php';
 checkAdminAuth();
 
-$stmt1 = $conn->prepare("
-    SELECT r.*, u.full_name, 'student' AS origin 
+// Get approved requests
+$stmt = $conn->prepare("
+    SELECT r.*, u.full_name 
     FROM requests r 
     JOIN users u ON r.user_id = u.id 
     WHERE r.status = 'approved'
     ORDER BY r.created_at DESC
 ");
-$stmt1->execute();
-$studentRequests = $stmt1->get_result()->fetch_all(MYSQLI_ASSOC);
-
-
-$stmt2 = $conn->prepare("
-    SELECT ar.*, u.full_name, 'alumni' AS origin 
-    FROM alumni_requests ar 
-    JOIN users u ON ar.user_id = u.id 
-    WHERE ar.status = 'approved'
-    ORDER BY ar.created_at DESC
-");
-$stmt2->execute();
-$alumniRequests = $stmt2->get_result()->fetch_all(MYSQLI_ASSOC);
-
-
-$approvedRequests = array_merge($studentRequests, $alumniRequests);
-
-usort($approvedRequests, function($a, $b) {
-    return strtotime($b['created_at']) - strtotime($a['created_at']);
-});
+$stmt->execute();
+$result = $stmt->get_result();
+$approvedRequests = $result->fetch_all(MYSQLI_ASSOC);
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Approved Requests - DNSC E-Request System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         .sidebar {
             min-height: 100vh;
-            background-color: #198754;
+            background-color: #2d5516;
             color: white;
         }
         .nav-link {
             color: rgba(255,255,255,.8);
-            position: relative;
-        } 
-        .nav-link:hover, .nav-link.active {
+        }
+        .nav-link:hover {
+            color: white;
+        }
+        .nav-link.active {
             color: white;
             background-color: rgba(255,255,255,.2);
         }
-        .table-hover tbody tr:hover {
-            background-color: #f1f1f1;
+        .dashboard-card {
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
-        .btn-action {
-            min-width: 100px;
+        .btn-primary {
+            background-color: #498428;
+            border-color: #498428;
+        }
+        .btn-primary:hover {
+            background-color: #2d5516;
+            border-color: #2d5516;
         }
     </style>
 </head>
@@ -71,26 +65,41 @@ usort($approvedRequests, function($a, $b) {
                 </div>
                 <ul class="nav flex-column">
                     <li class="nav-item">
-                        <a class="nav-link" href="dashboard.php"><i class="fas fa-tachometer-alt me-2"></i> Dashboard</a>
+                        <a class="nav-link" href="dashboard.php">
+                            <i class="fas fa-tachometer-alt me-2"></i>
+                            Dashboard
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="requests.php"><i class="fas fa-clipboard-list me-2"></i> All Requests</a>
+                        <a class="nav-link" href="requests.php">
+                            <i class="fas fa-clipboard-list me-2"></i>
+                            All Requests
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="pending.php"><i class="fas fa-clock me-2"></i> Pending Requests</a>
+                        <a class="nav-link" href="pending.php">
+                            <i class="fas fa-clock me-2"></i>
+                            Pending Requests
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="approved.php"><i class="fas fa-check-circle me-2"></i> Approved Requests</a>
+                        <a class="nav-link active" href="approved.php">
+                            <i class="fas fa-check-circle me-2"></i>
+                            Approved Requests
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="completed.php"><i class="fas fa-check-double me-2"></i> Completed Requests</a>
+                        <a class="nav-link" href="completed.php">
+                            <i class="fas fa-check-double me-2"></i>
+                            Completed Requests
+                        </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="registration_list.php"><i class="fas fa-user-check me-2"></i> Registration List</a>
-                    </li>
-                    <li class="nav-item mt-5">
-                        <a class="nav-link" href="../logout.php"><i class="fas fa-sign-out-alt me-2"></i> Logout</a>
-                    </li>
+                    <!-- <li class="nav-item mt-5">
+                        <a class="nav-link" href="../logout.php">
+                            <i class="fas fa-sign-out-alt me-2"></i>
+                            Logout
+                        </a>
+                    </li> -->
                 </ul>
             </div>
         </div>
@@ -128,15 +137,14 @@ usort($approvedRequests, function($a, $b) {
                                 <?php foreach ($approvedRequests as $request): ?>
                                 <tr>
                                     <td><?php echo $request['id']; ?></td>
-                                    <td>
-                                        <?php echo htmlspecialchars($request['full_name']); ?>
-                                        <span class="badge bg-secondary ms-1"><?php echo ucfirst($request['origin']); ?></span>
-                                    </td>
+                                    <td><?php echo htmlspecialchars($request['full_name']); ?></td>
                                     <td><?php echo htmlspecialchars($request['request_type']); ?></td>
-                                    <td><span class="badge bg-info"><?php echo ucfirst($request['status']); ?></span></td>
+                                    <td>
+                                        <span class="badge bg-info"><?php echo ucfirst($request['status']); ?></span>
+                                    </td>
                                     <td><?php echo date('M d, Y g:i A', strtotime($request['created_at'])); ?></td>
                                     <td>
-                                        <a href="<?php echo $request['origin'] === 'alumni' ? 'view_request.php' : 'view_request.php'; ?>?id=<?php echo $request['id']; ?>" class="btn btn-sm btn-primary">View</a>
+                                        <a href="view_request.php?id=<?php echo $request['id']; ?>" class="btn btn-sm btn-primary">View</a>
                                     </td>
                                 </tr>
                                 <?php endforeach; ?>

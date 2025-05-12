@@ -51,10 +51,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['registerbtn'])) {
         $stmt->bind_param("ssssssss", $stud_id, $full_name, $institute, $program, $email, $hashed_password, $photoName, $pre_select_role);    
 
         if ($stmt->execute()) {
+<<<<<<< HEAD
             echo "<script>
                 setTimeout(() => { window.location.href = 'login.php'; }, 3000);
             </script>";
             $success = "Registration successful!";
+=======
+            $success = "Registration successful! Please wait for admin verification.";
+
+            // Redirect to login page immediately after successful registration
+            header("Location: login.php");
+            exit(); // Make sure no further code is executed after the redirect
+>>>>>>> parent of c2e1378 (Merge branch 'pr/13/Duran' into Main)
         } else {
             $error = "Something went wrong. Please try again.";
         }
@@ -133,9 +141,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['registerbtn'])) {
                     <input type="password" name="confirm_password" class="form-control" required>
                 </div>
                 <div class="form-group">
+<<<<<<< HEAD
                     <label>Upload IDPhoto</label>
                     <input type="file" name="photo" class="form-control-file" accept="image/*" onchange="previewPhoto(this)" required>
                     <img id="preview-img" class="img-thumbnail" onclick="openImageModal()" />
+=======
+                    <label>Upload Photo</label>
+                    <input type="file" name="photo" class="form-control-file" required>
+>>>>>>> parent of c2e1378 (Merge branch 'pr/13/Duran' into Main)
                 </div>
                 <div class="form-group">
                     <label>Status</label>
