@@ -472,7 +472,7 @@ if(isset($_GET['mark_read']) && $_GET['mark_read'] == 'all') {
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <a href="../logout.php" class="btn btn-danger">Yes, Logout</a>
+                <a href="../logout.php" class="btn btn-danger">Yes, and Logout</a>
             </div>
         </div>
     </div>
