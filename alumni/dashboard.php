@@ -26,6 +26,40 @@ $stmt = $conn->prepare("SELECT * FROM alumni_requests WHERE user_id = ? ORDER BY
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $latestRequests = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+
+$announcement = null;
+
+$stmt = $conn->prepare("CALL get_unseen_announcement_for_user(?)");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+
+
+$stmt->close();
+$conn->next_result();
+
+$stmt = $conn->prepare("CALL GetActiveUnviewedAnnouncement(?)");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$announcements = $result->fetch_all(MYSQLI_ASSOC);
+
+
+if ($result && $result->num_rows > 0) {
+    $announcement = $result->fetch_assoc(); 
+    
+if ($announcement && !isset($_SESSION['announcement_shown'])) {
+    $_SESSION['announcement_shown'] = true;
+    $showAnnouncement = true;
+} else {
+    $showAnnouncement = false;
+}
+
+}
+
+
+
 ?>
 
 <!DOCTYPE html>
@@ -306,5 +340,66 @@ $latestRequests = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
       }
     });
   </script>
+<?php if (!empty($announcements) && !isset($_SESSION['announcement_shown'])): ?>
+<?php foreach ($announcements as $index => $announcement): ?>
+  <?php $_SESSION['announcement_shown'] = true; ?>
+<div class="modal fade" id="announcementModal<?php echo $index; ?>" tabindex="-1" aria-labelledby="announcementModalLabel<?php echo $index; ?>" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title" id="announcementModalLabel<?php echo $index; ?>"><?php echo htmlspecialchars($announcement['title']); ?></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" data-index="<?php echo $index; ?>"></button>
+      </div>
+      <div class="modal-body">
+        <?php if (!empty($announcement['photo'])): ?>
+          <img src="../<?php echo htmlspecialchars($announcement['photo']); ?>" class="img-fluid mb-3" alt="Announcement Image">
+        <?php  endif; ?>
+        <p><?php echo nl2br(htmlspecialchars($announcement['body'])); ?></p>
+        <p class="text-muted small">
+          Active from <?php echo date('F j, Y', strtotime($announcement['start_date'])); ?>
+          to <?php echo date('F j, Y', strtotime($announcement['end_date'])); ?>
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary modal-next" data-bs-dismiss="modal" data-index="<?php echo $index; ?>">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+<?php endforeach; ?>
+
+<script>
+  const announcements = <?php echo json_encode($announcements); ?>;
+  const modals = [];
+
+  announcements.forEach((_, index) => {
+    modals[index] = new bootstrap.Modal(document.getElementById('announcementModal' + index));
+  });
+
+  window.addEventListener('DOMContentLoaded', () => {
+    let current = 0;
+
+    function showNextModal() {
+      if (current < modals.length) {
+        modals[current].show();
+
+        // Send AJAX to mark viewed
+        fetch('mark_announcement_viewed.php?id=' + announcements[current].id);
+
+        // When closed, show next one
+        const modalElement = document.getElementById('announcementModal' + current);
+        modalElement.addEventListener('hidden.bs.modal', () => {
+          current++;
+          showNextModal();
+        }, { once: true });
+      }
+    }
+
+    showNextModal();
+  });
+</script>
+<?php endif; ?>
+
+
 </body>
 </html>

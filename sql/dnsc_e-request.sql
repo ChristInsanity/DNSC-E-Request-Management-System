@@ -259,7 +259,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_UpdateRequestStatus` (IN `p_requ
     END IF;
 END$$
 
-DELIMITER ;
+
 
 CREATE PROCEDURE `sp_GetActiveAnnouncementForUser` (IN `p_user_id` INT)
 BEGIN
@@ -270,13 +270,42 @@ BEGIN
       AND NOT EXISTS (
           SELECT 1
           FROM announcement_views av
-          WHERE av.announcement_id = a.id AND av.user_id = p_user_id
+          WHERE av.announcement_id = a.id
+            AND av.user_id = p_user_id
       )
     ORDER BY a.start_date DESC
     LIMIT 1;
+END//
+
+CREATE PROCEDURE `get_unseen_announcement_for_user` (IN `p_user_id` INT)
+BEGIN
+  SELECT a.*
+  FROM announcements a
+  WHERE a.start_date <= CURDATE()
+    AND a.end_date >= CURDATE()
+    AND NOT EXISTS (
+      SELECT 1 FROM announcement_views v
+      WHERE v.announcement_id = a.id AND v.user_id = in_user_id
+    )
+  ORDER BY a.created_at DESC
+  LIMIT 1;
+END
+
+
+CREATE PROCEDURE `GetActiveUnviewedAnnouncement`(IN `p_user_id` INT)
+BEGIN
+  SELECT `id`, `title`, `body`, `photo`, `start_date`, `end_date`
+  FROM announcements
+  WHERE NOW() BETWEEN start_date AND end_date
+    AND is_active = 1
+    AND id NOT IN (
+      SELECT announcement_id FROM announcement_views WHERE user_id = p_user_id
+    )
+  ORDER BY start_date DESC;
 END$$
 
-DELIMITER ;
+
+
 
 
 -- --------------------------------------------------------
@@ -286,7 +315,7 @@ DELIMITER ;
 --
 
 CREATE TABLE `alumni_requests` (
-  `id` int NOT NULL,
+  id INT AUTO_INCREMENT PRIMARY KEY,
   `user_id` int NOT NULL,
   `request_type` varchar(100) NOT NULL,
   `institute` varchar(50) DEFAULT NULL,
@@ -298,7 +327,7 @@ CREATE TABLE `alumni_requests` (
   `is_seen` tinyint(1) DEFAULT '0',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `alumni_requests`
@@ -314,12 +343,12 @@ INSERT INTO `alumni_requests` (`id`, `user_id`, `request_type`, `institute`, `pr
 --
 
 CREATE TABLE `notifications` (
-  `id` int NOT NULL,
+  id INT AUTO_INCREMENT PRIMARY KEY,
   `user_id` int NOT NULL,
   `message` text NOT NULL,
   `is_read` tinyint(1) DEFAULT '0',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -342,7 +371,7 @@ CREATE TABLE `requests` (
   `is_seen` tinyint(1) DEFAULT '0',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -351,7 +380,7 @@ CREATE TABLE `requests` (
 --
 
 CREATE TABLE `users` (
-  `id` int NOT NULL,
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
   `stud_id` varchar(50) DEFAULT NULL,
   `full_name` varchar(100) DEFAULT NULL,
   `institute` varchar(100) DEFAULT NULL,
@@ -366,7 +395,7 @@ CREATE TABLE `users` (
   `approved_at` datetime DEFAULT NULL,
   `rejected_at` datetime DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -378,29 +407,29 @@ CREATE TABLE `announcements` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `title` VARCHAR(255) NOT NULL,
   `details` TEXT NOT NULL,
+  `body` TEXT NOT NULL,
   `photo` VARCHAR(255) DEFAULT NULL,
   `is_active` TINYINT(1) DEFAULT 1,
   `start_date` DATETIME NOT NULL,
   `end_date` DATETIME NOT NULL,
   `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `announcement_views`
 --
-CREATE TABLE `announcement_views` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `announcement_id` INT NOT NULL,
-  `user_id` INT NOT NULL,
-  `viewed_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_view` (`announcement_id`, `user_id`),
-  FOREIGN KEY (`announcement_id`) REFERENCES `announcements`(`id`) ON DELETE CASCADE,
-  FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  CREATE TABLE announcement_views (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  announcement_id INT NOT NULL,
+  viewed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY (user_id, announcement_id),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (announcement_id) REFERENCES announcements(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `users`
