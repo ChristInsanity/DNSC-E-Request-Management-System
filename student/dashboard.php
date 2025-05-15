@@ -2,7 +2,7 @@
 require_once '../config.php';
 checkStudentAuth();
 
-// Get statistics for dashboard using stored procedure
+// Get stats for using stored procedure on dashbord
 $user_id = $_SESSION['user_id'];
 
 $result = callProcedure($conn, 'sp_GetUserRequestsStats', 'i', [$user_id]);
@@ -14,7 +14,7 @@ $approvedRequests = $stats['approved_requests'];
 $completedRequests = $stats['completed_requests'];
 $unreadNotifications = $stats['unread_notifications'];
 
-// Get notifications
+// Get notifications (these can be triggered from backend)
 $stmt = $conn->prepare("SELECT * FROM notifications WHERE user_id = ? AND is_read = 0 ORDER BY created_at DESC");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
@@ -24,35 +24,40 @@ $notifications = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $result = callProcedure($conn, 'sp_GetUserRecentRequests', 'ii', [$user_id, 5]);
 $latestRequests = $result->fetch_all(MYSQLI_ASSOC);
 
-$announcement = null;
-
-$stmt = $conn->prepare("CALL get_unseen_announcement_for_user(?)");
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$result = $stmt->get_result();
-
-
-
-$stmt->close();
-$conn->next_result();
-
-$stmt = $conn->prepare("CALL GetActiveUnviewedAnnouncement(?)");
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$result = $stmt->get_result();
-$announcements = $result->fetch_all(MYSQLI_ASSOC);
-
-
-if ($result && $result->num_rows > 0) {
-    $announcement = $result->fetch_assoc(); 
-    
-if ($announcement && !isset($_SESSION['announcement_shown'])) {
-    $_SESSION['announcement_shown'] = true;
-    $showAnnouncement = true;
-} else {
-    $showAnnouncement = false;
+// Real-time notifications using trigger system
+$notificationsHTML = '';
+foreach ($notifications as $notification) {
+    $timeAgo = getTimeAgo($notification['created_at']);
+    $notificationsHTML .= '
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+        <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <strong class="me-auto">New Notification</strong>
+                <small>'.$timeAgo.'</small>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                '.$notification['message'].'
+            </div>
+        </div>
+    </div>';
 }
 
+// Helper function to get time ago
+function getTimeAgo($timestamp) {
+    $time = strtotime($timestamp);
+    $now = time();
+    $diff = $now - $time;
+    
+    if ($diff < 60) {
+        return "Just now";
+    } elseif ($diff < 3600) {
+        return floor($diff/60) . " minutes ago";
+    } elseif ($diff < 86400) {
+        return floor($diff/3600) . " hours ago";
+    } else {
+        return floor($diff/86400) . " days ago";
+    }
 }
 ?>
 
@@ -160,9 +165,22 @@ if ($announcement && !isset($_SESSION['announcement_shown'])) {
             margin-left: 0 !important;
         } */
 
+        /* Toast notification styling */
+        .toast {
+            max-width: 350px;
+            background-color: #fff;
+            border-left: 4px solid #198754;
+        }
+        .toast-header {
+            background-color: #f8f9fa;
+            color: #198754;
+        }
     </style>
 </head>
 <body>
+    <!-- Display notification toasts if any -->
+    <?php echo $notificationsHTML; ?>
+    
     <!-- Topbar/Header -->
 <nav class="navbar navbar-expand-lg navbar-dark custom-topbar px-3">
   <div class="container-fluid d-flex justify-content-between align-items-center">
@@ -420,66 +438,36 @@ if ($announcement && !isset($_SESSION['announcement_shown'])) {
             main.classList.add('col-12');
         }
     });
-</script>
-<?php if (!empty($announcements) && !isset($_SESSION['announcement_shown'])): ?>
-<?php foreach ($announcements as $index => $announcement): ?>
-  <?php $_SESSION['announcement_shown'] = true; ?>
-<div class="modal fade" id="announcementModal<?php echo $index; ?>" tabindex="-1" aria-labelledby="announcementModalLabel<?php echo $index; ?>" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header bg-success text-white">
-        <h5 class="modal-title" id="announcementModalLabel<?php echo $index; ?>"><?php echo htmlspecialchars($announcement['title']); ?></h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" data-index="<?php echo $index; ?>"></button>
-      </div>
-      <div class="modal-body">
-        <?php if (!empty($announcement['photo'])): ?>
-          <img src="../<?php echo htmlspecialchars($announcement['photo']); ?>" class="img-fluid mb-3" alt="Announcement Image">
-        <?php  endif; ?>
-        <p><?php echo nl2br(htmlspecialchars($announcement['body'])); ?></p>
-        <p class="text-muted small">
-          Active from <?php echo date('F j, Y', strtotime($announcement['start_date'])); ?>
-          to <?php echo date('F j, Y', strtotime($announcement['end_date'])); ?>
-        </p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary modal-next" data-bs-dismiss="modal" data-index="<?php echo $index; ?>">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
-<?php endforeach; ?>
 
-<script>
-  const announcements = <?php echo json_encode($announcements); ?>;
-  const modals = [];
-
-  announcements.forEach((_, index) => {
-    modals[index] = new bootstrap.Modal(document.getElementById('announcementModal' + index));
-  });
-
-  window.addEventListener('DOMContentLoaded', () => {
-    let current = 0;
-
-    function showNextModal() {
-      if (current < modals.length) {
-        modals[current].show();
-
-        // Send AJAX to mark viewed
-        fetch('mark_announcement_viewed.php?id=' + announcements[current].id);
-
-        // When closed, show next one
-        const modalElement = document.getElementById('announcementModal' + current);
-        modalElement.addEventListener('hidden.bs.modal', () => {
-          current++;
-          showNextModal();
-        }, { once: true });
-      }
+    // Initialize auto-hide for toasts after 5 seconds
+    document.addEventListener('DOMContentLoaded', function() {
+        var toasts = document.querySelectorAll('.toast');
+        toasts.forEach(function(toast) {
+            setTimeout(function() {
+                var bsToast = new bootstrap.Toast(toast);
+                bsToast.hide();
+            }, 5000);
+        });
+    });
+    
+    // Check for new notifications periodically
+    function checkNotifications() {
+        $.ajax({
+            url: 'check_student_notifications.php',
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                if(data.new_notifications) {
+                    // Refresh the page to show new notifications
+                    location.reload();
+                }
+            }
+        });
     }
-
-    showNextModal();
-  });
+    
+    // Check every 30 seconds
+    setInterval(checkNotifications, 30000);
 </script>
-<?php endif; ?>
 
 
 </body>
