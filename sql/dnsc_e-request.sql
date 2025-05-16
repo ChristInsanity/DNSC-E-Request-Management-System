@@ -34,7 +34,7 @@ CREATE TABLE `system_settings` (
   `new_requests_count` int DEFAULT '0',
   `new_registrations_count` int DEFAULT '0',
   `last_updated` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `system_settings`
@@ -48,7 +48,7 @@ INSERT INTO `system_settings` (`id`, `setting_key`, `setting_value`, `new_reques
 --
 
 CREATE TABLE `admin_notifications` (
-  `id` int NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL FAUTO_INCREMENT,
   `message` text NOT NULL,
   `user_id` int DEFAULT NULL,
   `request_id` int DEFAULT NULL,
@@ -58,7 +58,7 @@ CREATE TABLE `admin_notifications` (
   PRIMARY KEY (`id`),
   KEY `idx_admin_notif_is_read` (`is_read`),
   KEY `idx_admin_notif_created` (`created_at`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 DELIMITER $$
 --
@@ -182,7 +182,12 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_GetUserRequestsStats` (IN `p_use
         (SELECT COUNT(*) FROM notifications WHERE user_id = p_user_id AND is_read = 0) AS unread_notifications;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_MarkAllNotificationsAsRead` (IN `p_user_id` INT)   BEGIN
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_MarkAllNotificationsAsRead` (IN `p_user_id` INT)   
+BEGIN
     UPDATE notifications
     SET is_read = 1
     WHERE user_id = p_user_id;
@@ -190,7 +195,15 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_MarkAllNotificationsAsRead` (IN 
     SELECT ROW_COUNT() AS updated_count;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_ProcessRegistration` (IN `p_user_id` INT, IN `p_approve` BOOLEAN, IN `p_role` VARCHAR(10), IN `p_rejection_reason` TEXT)   BEGIN
+DELIMITER $$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_ProcessRegistration` (
+  IN `p_user_id` INT,
+  IN `p_approve` BOOLEAN,
+  IN `p_role` VARCHAR(10),
+  IN `p_rejection_reason` TEXT
+)
+BEGIN
     DECLARE v_user_email VARCHAR(100);
     DECLARE v_user_name VARCHAR(100);
     
@@ -230,45 +243,60 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_ProcessRegistration` (IN `p_user
     END IF;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_UpdateRequestStatus` (IN `p_request_id` INT, IN `p_table_source` VARCHAR(10), IN `p_status` VARCHAR(20), IN `p_tracking_number` VARCHAR(20), IN `p_pickup_datetime` DATETIME)   BEGIN
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_UpdateRequestStatus` (
+    IN `p_request_id` INT,
+    IN `p_table_source` VARCHAR(10),
+    IN `p_status` VARCHAR(20),
+    IN `p_tracking_number` VARCHAR(20),
+    IN `p_pickup_datetime` DATETIME
+)
+BEGIN
     DECLARE v_user_id INT;
     DECLARE v_notification_message TEXT;
     DECLARE v_request_type VARCHAR(100);
     
-    -- Get user_id based on source table
+    -- Get user_id and request_type based on source table
     IF p_table_source = 'student' THEN
-        SELECT user_id, request_type INTO v_user_id, v_request_type FROM requests WHERE id = p_request_id;
-        
-        -- Update the request status
+        SELECT user_id, request_type INTO v_user_id, v_request_type
+        FROM requests WHERE id = p_request_id;
+
         IF p_tracking_number IS NOT NULL AND p_pickup_datetime IS NOT NULL THEN
             UPDATE requests 
             SET status = p_status, 
                 tracking_number = p_tracking_number, 
-                pickup_datetime = p_pickup_datetime 
+                pickup_datetime = p_pickup_datetime,
+                updated_at = NOW()
             WHERE id = p_request_id;
         ELSE
             UPDATE requests 
-            SET status = p_status
+            SET status = p_status,
+                updated_at = NOW()
             WHERE id = p_request_id;
         END IF;
     ELSE
-        SELECT user_id, request_type INTO v_user_id, v_request_type FROM alumni_requests WHERE id = p_request_id;
-        
-        -- Update the request status
+        SELECT user_id, request_type INTO v_user_id, v_request_type
+        FROM alumni_requests WHERE id = p_request_id;
+
         IF p_tracking_number IS NOT NULL AND p_pickup_datetime IS NOT NULL THEN
             UPDATE alumni_requests 
             SET status = p_status, 
                 tracking_number = p_tracking_number, 
-                pickup_datetime = p_pickup_datetime 
+                pickup_datetime = p_pickup_datetime,
+                updated_at = NOW()
             WHERE id = p_request_id;
         ELSE
             UPDATE alumni_requests 
-            SET status = p_status
+            SET status = p_status,
+                updated_at = NOW()
             WHERE id = p_request_id;
         END IF;
     END IF;
     
-    -- Create notification message based on status
+    -- Compose notification message
     IF p_status = 'approved' THEN
         SET v_notification_message = CONCAT('Your request for ', v_request_type, ' (ID: ', p_request_id, ') has been approved. Please pick up your document on ', 
             DATE_FORMAT(p_pickup_datetime, '%M %d, %Y at %h:%i %p'), '. Your tracking number is: ', p_tracking_number);
@@ -277,14 +305,14 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_UpdateRequestStatus` (IN `p_requ
     ELSEIF p_status = 'completed' THEN
         SET v_notification_message = CONCAT('Your request for ', v_request_type, ' (ID: ', p_request_id, ') has been completed. Thank you for using our service.');
     END IF;
-    
-    -- Insert notification
+
+    -- Insert notification if applicable
     IF v_notification_message IS NOT NULL THEN
-        INSERT INTO notifications (user_id, message) 
-        VALUES (v_user_id, v_notification_message);
+        INSERT INTO notifications (user_id, message, created_at)
+        VALUES (v_user_id, v_notification_message, NOW());
     END IF;
-    
-    -- Return the updated request
+
+    -- Return updated request details
     IF p_table_source = 'student' THEN
         SELECT r.*, u.full_name, u.email, u.stud_id
         FROM requests r
@@ -296,9 +324,15 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_UpdateRequestStatus` (IN `p_requ
         JOIN users u ON r.user_id = u.id
         WHERE r.id = p_request_id;
     END IF;
-END$$
+
+END $$
+
+DELIMITER ;
 
 
+
+
+ DELIMITER $$
 
 CREATE PROCEDURE `sp_GetActiveAnnouncementForUser` (IN `p_user_id` INT)
 BEGIN
@@ -309,12 +343,20 @@ BEGIN
       AND NOT EXISTS (
           SELECT 1
           FROM announcement_views av
-          WHERE av.announcement_id = a.id
-            AND av.user_id = p_user_id
+          WHERE av.announcement_id = a.id AND av.user_id = p_user_id
       )
     ORDER BY a.start_date DESC
     LIMIT 1;
-END//
+END$$
+
+DELIMITER ;
+
+
+
+
+
+
+DELIMITER $$
 
 CREATE PROCEDURE `get_unseen_announcement_for_user` (IN `p_user_id` INT)
 BEGIN
@@ -324,12 +366,11 @@ BEGIN
     AND a.end_date >= CURDATE()
     AND NOT EXISTS (
       SELECT 1 FROM announcement_views v
-      WHERE v.announcement_id = a.id AND v.user_id = in_user_id
+      WHERE v.announcement_id = a.id AND v.user_id = p_user_id
     )
   ORDER BY a.created_at DESC
   LIMIT 1;
-END
-
+END$$
 
 CREATE PROCEDURE `GetActiveUnviewedAnnouncement`(IN `p_user_id` INT)
 BEGIN
@@ -343,6 +384,27 @@ BEGIN
   ORDER BY start_date DESC;
 END$$
 
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_GetActiveAnnouncements()
+BEGIN
+  SELECT 
+    id,
+    title,
+    photo,
+    description,
+    start_date,
+    end_date
+  FROM announcements
+  WHERE CURDATE() BETWEEN start_date AND end_date
+  ORDER BY start_date DESC;
+END $$
+
+DELIMITER ;
+
+
 
 
 
@@ -354,7 +416,7 @@ END$$
 --
 
 CREATE TABLE `alumni_requests` (
-  id INT AUTO_INCREMENT PRIMARY KEY,
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
   `user_id` int NOT NULL,
   `request_type` varchar(100) NOT NULL,
   `institute` varchar(50) DEFAULT NULL,
@@ -382,7 +444,7 @@ INSERT INTO `alumni_requests` (`id`, `user_id`, `request_type`, `institute`, `pr
 --
 
 CREATE TABLE `notifications` (
-  id INT AUTO_INCREMENT PRIMARY KEY,
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
   `user_id` int NOT NULL,
   `message` text NOT NULL,
   `is_read` tinyint(1) DEFAULT '0',
@@ -396,7 +458,7 @@ CREATE TABLE `notifications` (
 --
 
 CREATE TABLE `requests` (
-  `id` int NOT NULL,
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
   `user_id` int NOT NULL,
   `request_type` varchar(100) NOT NULL,
   `institute` varchar(50) DEFAULT NULL,
@@ -460,25 +522,27 @@ CREATE TABLE `announcements` (
 --
 -- Table structure for table `announcement_views`
 --
-  CREATE TABLE announcement_views (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  user_id INT NOT NULL,
-  announcement_id INT NOT NULL,
-  viewed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE KEY (user_id, announcement_id),
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-  FOREIGN KEY (announcement_id) REFERENCES announcements(id) ON DELETE CASCADE
+ CREATE TABLE `announcement_views` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `user_id` INT NOT NULL,
+  `announcement_id` INT NOT NULL,
+  `viewed_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),  -- This fixes the auto_increment issue
+  UNIQUE KEY `user_announcement_unique` (`user_id`, `announcement_id`),
+  FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`announcement_id`) REFERENCES `announcements`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 
 --
 -- Dumping data for table `users`
 --
 
 
-INSERT INTO `users` (`id`, `stud_id`, `full_name`, `institute`, `program`, `email`, `password`, `role`, `pre_select_role`, `uploadphoto`, `verification_status`, `rejection_reason`, `approved_at`, `rejected_at`, `created_at`) VALUES
-(1, 'admin', 'System Administrator', NULL, NULL, 'admin@dnsc.edu.ph', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', NULL, NULL, 'approved_student', NULL, NULL, NULL, '2025-05-11 06:00:19'),
-(4, '2023-00166', 'John Lyold C. Lozada', 'IC', 'BSIT', 'lozada.johnlyold@dnsc.edu.ph', '$2y$10$zELsc9zV.Y0GQzvbWV7ZB.g4o0ENNJauCCLNPelHPT7EhHXPbn.yO', 'alumni', 'student', '682042178e835_ako.jpg', 'approved_alumni', NULL, '2025-05-11 14:23:25', NULL, '2025-05-11 06:22:15'),
-(5, '2023-00069', 'Don Dominick Enargan', 'IC', 'BSIT', 'enargan.dondominick@dnsc.edu.ph', '$2y$10$qrkRrB/jvZOriAYKTVxpJO3sQ3BSFl//a2AFFWUWRg8oudUrS2aw6', 'student', 'student', '682042e9da46d_ako.jpg', 'approved_student', NULL, '2025-05-11 14:26:10', NULL, '2025-05-11 06:25:45');
+  INSERT INTO `users` (`id`, `stud_id`, `full_name`, `institute`, `program`, `email`, `password`, `role`, `pre_select_role`, `uploadphoto`, `verification_status`, `rejection_reason`, `approved_at`, `rejected_at`, `created_at`) VALUES
+  (1, 'admin', 'System Administrator', NULL, NULL, 'admin@dnsc.edu.ph', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', NULL, NULL, 'approved_student', NULL, NULL, NULL, '2025-05-11 06:00:19'),
+  (4, '2023-00166', 'John Lyold C. Lozada', 'IC', 'BSIT', 'lozada.johnlyold@dnsc.edu.ph', '$2y$10$zELsc9zV.Y0GQzvbWV7ZB.g4o0ENNJauCCLNPelHPT7EhHXPbn.yO', 'alumni', 'student', '682042178e835_ako.jpg', 'approved_alumni', NULL, '2025-05-11 14:23:25', NULL, '2025-05-11 06:22:15'),
+  (5, '2023-00069', 'Don Dominick Enargan', 'IC', 'BSIT', 'enargan.dondominick@dnsc.edu.ph', '$2y$10$qrkRrB/jvZOriAYKTVxpJO3sQ3BSFl//a2AFFWUWRg8oudUrS2aw6', 'student', 'student', '682042e9da46d_ako.jpg', 'approved_student', NULL, '2025-05-11 14:26:10', NULL, '2025-05-11 06:25:45');
 
 --
 -- Indexes for dumped tables
@@ -487,165 +551,3 @@ INSERT INTO `users` (`id`, `stud_id`, `full_name`, `institute`, `program`, `emai
 --
 -- Indexes for table `alumni_requests`
 --
-ALTER TABLE `alumni_requests`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `user_id` (`user_id`);
-
---
--- Indexes for table `notifications`
---
-ALTER TABLE `notifications`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_notifications_user_id_is_read` (`user_id`,`is_read`);
-
---
--- Indexes for table `requests`
---
-ALTER TABLE `requests`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `user_id` (`user_id`),
-  ADD KEY `idx_requests_tracking_number` (`tracking_number`),
-  ADD KEY `idx_requests_status` (`status`),
-  ADD KEY `idx_requests_request_type` (`request_type`),
-  ADD KEY `idx_requests_created_at` (`created_at`);
-
---
--- Indexes for table `users`
---
-ALTER TABLE `users`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_users_full_name` (`full_name`),
-  ADD KEY `idx_users_email` (`email`);
-
---
--- Indexes for table `system_settings`
---
-ALTER TABLE `system_settings`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `setting_key` (`setting_key`);
-
---
--- AUTO_INCREMENT for dumped tables
---
-
---
--- AUTO_INCREMENT for table `alumni_requests`
---
-ALTER TABLE `alumni_requests`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
-
---
--- AUTO_INCREMENT for table `notifications`
---
-ALTER TABLE `notifications`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `requests`
---
-ALTER TABLE `requests`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `users`
---
-ALTER TABLE `users`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
-
---
--- AUTO_INCREMENT for table `system_settings`
---
-ALTER TABLE `system_settings`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
-
---
--- Triggers for request management
---
-
-DELIMITER $$
-
--- Trigger: When a student creates a new request
-CREATE TRIGGER tr_student_request_insert
-AFTER INSERT ON requests
-FOR EACH ROW
-BEGIN
-    -- Update system settings counter
-    UPDATE system_settings SET new_requests_count = new_requests_count + 1 WHERE id = 1;
-    
-    -- Create notification for admin
-    INSERT INTO admin_notifications (message, request_id, request_type, created_at)
-    VALUES (CONCAT('New student request from ID: ', NEW.user_id), NEW.id, 'student_request', NOW());
-END$$
-
--- Trigger: When an alumni creates a new request
-CREATE TRIGGER tr_alumni_request_insert
-AFTER INSERT ON alumni_requests
-FOR EACH ROW
-BEGIN
-    -- Update system settings counter
-    UPDATE system_settings SET new_requests_count = new_requests_count + 1 WHERE id = 1;
-    
-    -- Create notification for admin
-    INSERT INTO admin_notifications (message, request_id, request_type, created_at)
-    VALUES (CONCAT('New alumni request from ID: ', NEW.user_id), NEW.id, 'alumni_request', NOW());
-END$$
-
--- Trigger: When a student request status changes
-CREATE TRIGGER tr_student_request_status_update
-AFTER UPDATE ON requests
-FOR EACH ROW
-BEGIN
-    -- Check if status changed
-    IF NEW.status != OLD.status THEN
-        -- Create notification for user
-        INSERT INTO notifications (user_id, message, is_read, created_at)
-        VALUES (
-            NEW.user_id, 
-            CONCAT('Your request for ', NEW.request_type, ' has been updated to: ', UPPER(NEW.status)),
-            0,
-            NOW()
-        );
-    END IF;
-END$$
-
--- Trigger: When an alumni request status changes
-CREATE TRIGGER tr_alumni_request_status_update
-AFTER UPDATE ON alumni_requests
-FOR EACH ROW
-BEGIN
-    -- Check if status changed
-    IF NEW.status != OLD.status THEN
-        -- Create notification for user
-        INSERT INTO notifications (user_id, message, is_read, created_at)
-        VALUES (
-            NEW.user_id, 
-            CONCAT('Your request for ', NEW.request_type, ' has been updated to: ', UPPER(NEW.status)),
-            0,
-            NOW()
-        );
-    END IF;
-END$$
-
--- Trigger: User registration tracking
-CREATE TRIGGER tr_user_registration
-AFTER INSERT ON users
-FOR EACH ROW
-BEGIN
-    -- Check if not an admin account
-    IF NEW.role IS NULL OR NEW.role != 'admin' THEN
-        -- Update system settings counter for new registrations
-        UPDATE system_settings SET new_registrations_count = new_registrations_count + 1 WHERE id = 1;
-        
-        -- Create admin notification
-        INSERT INTO admin_notifications (message, user_id, request_type, created_at)
-        VALUES (CONCAT('New user registration: ', NEW.full_name), NEW.id, 'registration', NOW());
-    END IF;
-END$$
-
-DELIMITER ;
-
-COMMIT;
-
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

@@ -23,6 +23,37 @@ $notifications = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 // Get latest requests using stored procedure
 $result = callProcedure($conn, 'sp_GetUserRecentRequests', 'ii', [$user_id, 5]);
 $latestRequests = $result->fetch_all(MYSQLI_ASSOC);
+
+$announcement = null;
+
+$stmt = $conn->prepare("CALL get_unseen_announcement_for_user(?)");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+
+
+$stmt->close();
+$conn->next_result();
+
+$stmt = $conn->prepare("CALL GetActiveUnviewedAnnouncement(?)");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$announcements = $result->fetch_all(MYSQLI_ASSOC);
+
+
+if ($result && $result->num_rows > 0) {
+    $announcement = $result->fetch_assoc(); 
+    
+if ($announcement && !isset($_SESSION['announcement_shown'])) {
+    $_SESSION['announcement_shown'] = true;
+    $showAnnouncement = true;
+} else {
+    $showAnnouncement = false;
+}
+
+}
 ?>
 
 <!DOCTYPE html>
@@ -143,7 +174,16 @@ $latestRequests = $result->fetch_all(MYSQLI_ASSOC);
 </head>
 <body>
     <!-- Display notification toasts if any -->
-    <?php echo $notificationsHTML; ?>
+    <?php $notificationsHTML = '';
+
+// Example code to populate it
+while ($row = mysqli_fetch_assoc($result)) {
+    $notificationsHTML .= '<li>' . htmlspecialchars($row['message']) . '</li>';
+}
+
+// Then you can use it safely on line 177:
+echo $notificationsHTML;
+ ?>
     
     <!-- Topbar/Header -->
 <nav class="navbar navbar-expand-lg navbar-dark custom-topbar px-3">
@@ -202,6 +242,12 @@ $latestRequests = $result->fetch_all(MYSQLI_ASSOC);
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" href="announcements.php">
+                                <i class="fas fa-bullhorn me-2"></i>
+                                Announcements
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" href="new_request.php">
                                 <i class="fas fa-plus-circle me-2"></i>
                                 New Request
@@ -232,15 +278,6 @@ $latestRequests = $result->fetch_all(MYSQLI_ASSOC);
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                     <h1 class="h2">Student Dashboard</h1>
                 </div>
-
-                <!-- Notifications -->
-                <?php if (count($notifications) > 0): ?>
-                <div class="alert alert-info alert-dismissible fade show" role="alert">
-                    <strong>You have <?php echo count($notifications); ?> new notification(s)!</strong> 
-                    <a href="notifications.php" class="alert-link">Click here to view them</a>.
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-                <?php endif; ?>
                
 
                 <!-- Stats Cards -->
@@ -491,6 +528,7 @@ $latestRequests = $result->fetch_all(MYSQLI_ASSOC);
   });
 </script>
 <?php endif; ?>
+
 
 
 </body>

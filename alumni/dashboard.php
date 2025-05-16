@@ -28,18 +28,6 @@ $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $latestRequests = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
-$announcement = null;
-
-$stmt = $conn->prepare("CALL get_unseen_announcement_for_user(?)");
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$result = $stmt->get_result();
-
-
-
-$stmt->close();
-$conn->next_result();
-
 $stmt = $conn->prepare("CALL GetActiveUnviewedAnnouncement(?)");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
@@ -94,6 +82,7 @@ function getTimeAgo($timestamp) {
         return floor($diff/86400) . " days ago";
     }
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -101,7 +90,7 @@ function getTimeAgo($timestamp) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Alumni Dashboard - DNSC E-Request System</title>
+  <title>Alumni Dashboard - DNSC E-Request System</title> 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <style>
@@ -226,6 +215,12 @@ function getTimeAgo($timestamp) {
               <i class="fas fa-tachometer-alt me-2"></i> Dashboard
             </a>
           </li>
+            <li class="nav-item">
+              <a class="nav-link" href="announcements.php">
+                  <i class="fas fa-bullhorn me-2"></i>
+                  Announcements
+              </a>
+          </li>
           <li class="nav-item">
             <a class="nav-link" href="new_request.php">
               <i class="fas fa-plus-circle me-2"></i> New Request
@@ -257,15 +252,6 @@ function getTimeAgo($timestamp) {
         <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
           <h1 class="h2">Alumni Dashboard</h1>
         </div>
-
-        <!-- Notifications -->
-        <?php if (count($notifications) > 0): ?>
-          <div class="alert alert-info alert-dismissible fade show">
-            <strong>You have <?php echo count($notifications); ?> new notification(s)!</strong>
-            <a href="notifications.php" class="alert-link">Click here to view them</a>.
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-          </div>
-        <?php endif; ?>
 
         <!-- Stats Cards -->
         <div class="row my-4">

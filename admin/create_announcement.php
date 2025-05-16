@@ -18,7 +18,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["confirm_submit"])) {
         $target_path = $upload_dir . $filename;
 
         if (move_uploaded_file($_FILES["photo"]["tmp_name"], $target_path)) {
-            $photo_path = $target_path;
+           $photo_path = 'uploads/announcements/' . $filename;
+
         }
     }
 
