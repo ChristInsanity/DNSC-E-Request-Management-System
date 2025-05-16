@@ -474,8 +474,8 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `stud_id`, `full_name`, `institute`, `program`, `email`, `password`, `role`, `pre_select_role`, `uploadphoto`, `verification_status`, `rejection_reason`, `approved_at`, `rejected_at`, `created_at`) VALUES
 (1, 'admin', 'System Administrator', NULL, NULL, 'admin@dnsc.edu.ph', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', NULL, NULL, 'approved_student', NULL, NULL, NULL, '2025-05-11 06:00:19'),
-(4, '2023-00166', 'John Lyold C. Lozada', 'IC', 'BSIT', 'lozada.johnlyold@dnsc.edu.ph', '$2y$10$zELsc9zV.Y0GQzvbWV7ZB.g4o0ENNJauCCLNPelHPT7EhHXPbn.yO', 'alumni', 'student', '682042178e835_ako.jpg', 'approved_alumni', NULL, '2025-05-11 14:23:25', NULL, '2025-05-11 06:22:15'),
-(5, '2023-00069', 'Don Dominick Enargan', 'IC', 'BSIT', 'enargan.dondominick@dnsc.edu.ph', '$2y$10$qrkRrB/jvZOriAYKTVxpJO3sQ3BSFl//a2AFFWUWRg8oudUrS2aw6', 'student', 'student', '682042e9da46d_ako.jpg', 'approved_student', NULL, '2025-05-11 14:26:10', NULL, '2025-05-11 06:25:45');
+(2, '2023-00166', 'John Lyold C. Lozada', 'IC', 'BSIT', 'lozada.johnlyold@dnsc.edu.ph', '$2y$10$zELsc9zV.Y0GQzvbWV7ZB.g4o0ENNJauCCLNPelHPT7EhHXPbn.yO', 'alumni', 'student', '682042178e835_ako.jpg', 'approved_alumni', NULL, '2025-05-11 14:23:25', NULL, '2025-05-11 06:22:15'),
+(3, '2023-00069', 'Don Dominick Enargan', 'IC', 'BSIT', 'enargan.dondominick@dnsc.edu.ph', '$2y$10$qrkRrB/jvZOriAYKTVxpJO3sQ3BSFl//a2AFFWUWRg8oudUrS2aw6', 'student', 'student', '682042e9da46d_ako.jpg', 'approved_student', NULL, '2025-05-11 14:26:10', NULL, '2025-05-11 06:25:45');
 
 --
 -- Triggers `users`
