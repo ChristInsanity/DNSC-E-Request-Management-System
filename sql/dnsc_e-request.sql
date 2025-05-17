@@ -586,7 +586,7 @@ CREATE TABLE `users` (
 CREATE TABLE `announcements` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `title` VARCHAR(255) NOT NULL,
-  `details` TEXT NOT NULL,
+  `details` TEXT NULL DEFAULT NULL,
   `body` TEXT NOT NULL,
   `photo` VARCHAR(255) DEFAULT NULL,
   `is_active` TINYINT(1) DEFAULT 1,
@@ -775,21 +775,18 @@ ALTER TABLE `admin_notifications`
 -- Indexes for table `alumni_requests`
 --
 ALTER TABLE `alumni_requests`
-  ADD PRIMARY KEY (`id`),
   ADD KEY `user_id` (`user_id`);
 
 --
 -- Indexes for table `notifications`
 --
 ALTER TABLE `notifications`
-  ADD PRIMARY KEY (`id`),
   ADD KEY `idx_notifications_user_id_is_read` (`user_id`,`is_read`);
 
 --
 -- Indexes for table `requests`
 --
 ALTER TABLE `requests`
-  ADD PRIMARY KEY (`id`),
   ADD KEY `user_id` (`user_id`),
   ADD KEY `idx_requests_tracking_number` (`tracking_number`),
   ADD KEY `idx_requests_status` (`status`),
@@ -807,7 +804,6 @@ ALTER TABLE `system_settings`
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
-  ADD PRIMARY KEY (`id`),
   ADD KEY `idx_users_full_name` (`full_name`),
   ADD KEY `idx_users_email` (`email`);
 

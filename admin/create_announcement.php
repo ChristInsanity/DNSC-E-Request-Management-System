@@ -4,6 +4,7 @@ checkAdminAuth();
 
 $title = $body = $start_date = $end_date = "";
 $photo_path = "";
+$details = ""; 
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["confirm_submit"])) {
     $title = sanitize(trim($_POST["title"]));
@@ -19,12 +20,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["confirm_submit"])) {
 
         if (move_uploaded_file($_FILES["photo"]["tmp_name"], $target_path)) {
            $photo_path = 'uploads/announcements/' . $filename;
-
         }
     }
 
-    $stmt = $conn->prepare("INSERT INTO announcements (title, body, start_date, end_date, photo) VALUES (?, ?, ?, ?, ?)");
-    $stmt->bind_param("sssss", $title, $body, $start_date, $end_date, $photo_path);
+    // details field 
+    $stmt = $conn->prepare("INSERT INTO announcements (title, body, start_date, end_date, photo, details) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("ssssss", $title, $body, $start_date, $end_date, $photo_path, $details);
 
     if ($stmt->execute()) {
         echo "<script>
