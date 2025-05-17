@@ -246,10 +246,15 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_UpdateRequestStatus` (IN `p_requ
     DECLARE v_user_id INT;
     DECLARE v_notification_message TEXT;
     DECLARE v_request_type VARCHAR(100);
+    DECLARE v_full_name VARCHAR(100);
     
     -- Get user_id based on source table
     IF p_table_source = 'student' THEN
-        SELECT user_id, request_type INTO v_user_id, v_request_type FROM requests WHERE id = p_request_id;
+        SELECT r.user_id, r.request_type, u.full_name
+        INTO v_user_id, v_request_type, v_full_name
+        FROM requests r
+        JOIN users u ON r.user_id = u.id
+        WHERE r.id = p_request_id;
         
         -- Update the request status
         IF p_tracking_number IS NOT NULL AND p_pickup_datetime IS NOT NULL THEN
@@ -264,7 +269,11 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_UpdateRequestStatus` (IN `p_requ
             WHERE id = p_request_id;
         END IF;
     ELSE
-        SELECT user_id, request_type INTO v_user_id, v_request_type FROM alumni_requests WHERE id = p_request_id;
+        SELECT r.user_id, r.request_type, u.full_name
+        INTO v_user_id, v_request_type, v_full_name
+        FROM alumni_requests r
+        JOIN users u ON r.user_id = u.id
+        WHERE r.id = p_request_id;
         
         -- Update the request status
         IF p_tracking_number IS NOT NULL AND p_pickup_datetime IS NOT NULL THEN
@@ -282,12 +291,12 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_UpdateRequestStatus` (IN `p_requ
     
     -- Create notification message based on status
     IF p_status = 'approved' THEN
-        SET v_notification_message = CONCAT('Your request for ', v_request_type, ' (ID: ', p_request_id, ') has been approved. Please pick up your document on ', 
+        SET v_notification_message = CONCAT('Hello ', v_full_name, ', your request for ', v_request_type, ' has been approved. Please pick up your document on ', 
             DATE_FORMAT(p_pickup_datetime, '%M %d, %Y at %h:%i %p'), '. Your tracking number is: ', p_tracking_number);
     ELSEIF p_status = 'rejected' THEN
-        SET v_notification_message = CONCAT('Your request for ', v_request_type, ' (ID: ', p_request_id, ') has been rejected. Please contact the office for more information.');
+        SET v_notification_message = CONCAT('Hello ', v_full_name, ', your request for ', v_request_type, ' has been rejected. Please contact the office for more information.');
     ELSEIF p_status = 'completed' THEN
-        SET v_notification_message = CONCAT('Your request for ', v_request_type, ' (ID: ', p_request_id, ') has been completed. Thank you for using our service.');
+        SET v_notification_message = CONCAT('Hello ', v_full_name, ', your request for ', v_request_type, ' has been completed. Thank you for using our service.');
     END IF;
     
     -- Insert notification
@@ -365,13 +374,19 @@ $$
 DELIMITER ;
 DELIMITER $$
 CREATE TRIGGER `tr_alumni_request_status_update` AFTER UPDATE ON `alumni_requests` FOR EACH ROW BEGIN
+    -- Variable declarations must come first in MySQL triggers
+    DECLARE v_user_name VARCHAR(100);
+    
     -- Check if status changed
     IF NEW.status != OLD.status THEN
+        -- Get user's name
+        SELECT full_name INTO v_user_name FROM users WHERE id = NEW.user_id;
+        
         -- Create notification for user
         INSERT INTO notifications (user_id, message, is_read, created_at)
         VALUES (
             NEW.user_id, 
-            CONCAT('Your request for ', NEW.request_type, ' has been updated to: ', UPPER(NEW.status)),
+            CONCAT('Hello ', v_user_name, ', your request for ', NEW.request_type, ' has been updated to: ', UPPER(NEW.status)),
             0,
             NOW()
         );
@@ -463,20 +478,26 @@ END
 $$
 DELIMITER ;
 DELIMITER $$
-CREATE TRIGGER `tr_student_request_status_update` AFTER UPDATE ON `requests` FOR EACH ROW BEGIN
+CREATE TRIGGER `tr_student_request_status_update` AFTER UPDATE ON `requests` FOR EACH ROW 
+BEGIN
+    -- Variable declarations must come first in MySQL triggers
+    DECLARE v_user_name VARCHAR(100);
+    
     -- Check if status changed
     IF NEW.status != OLD.status THEN
+        -- Get user's name
+        SELECT full_name INTO v_user_name FROM users WHERE id = NEW.user_id;
+        
         -- Create notification for user
         INSERT INTO notifications (user_id, message, is_read, created_at)
         VALUES (
             NEW.user_id, 
-            CONCAT('Your request for ', NEW.request_type, ' has been updated to: ', UPPER(NEW.status)),
+            CONCAT('Hello ', v_user_name, ', your request for ', NEW.request_type, ' has been updated to: ', UPPER(NEW.status)),
             0,
             NOW()
         );
     END IF;
-END
-$$
+END$$
 DELIMITER ;
 
 -- --------------------------------------------------------

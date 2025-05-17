@@ -46,8 +46,6 @@ $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
 
-
-
 $stmt->close();
 $conn->next_result();
 
@@ -57,17 +55,51 @@ $stmt->execute();
 $result = $stmt->get_result();
 $announcements = $result->fetch_all(MYSQLI_ASSOC);
 
-
 if ($result && $result->num_rows > 0) {
     $announcement = $result->fetch_assoc(); 
     
-if ($announcement && !isset($_SESSION['announcement_shown'])) {
-    $_SESSION['announcement_shown'] = true;
-    $showAnnouncement = true;
-} else {
-    $showAnnouncement = false;
+    if ($announcement && !isset($_SESSION['announcement_shown'])) {
+        $_SESSION['announcement_shown'] = true;
+        $showAnnouncement = true;
+    } else {
+        $showAnnouncement = false;
+    }
 }
 
+// Real-time notifs for toast - Similar to alumni dashboard
+$notificationsHTML = '';
+foreach ($notifications as $notification) {
+    $timeAgo = getTimeAgo($notification['created_at']);
+    $notificationsHTML .= '
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+        <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <strong class="me-auto">New Notification</strong>
+                <small>'.$timeAgo.'</small>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                '.$notification['message'].'
+            </div>
+        </div>
+    </div>';
+}
+
+// Helper function to get time ago for notifications
+function getTimeAgo($timestamp) {
+    $time = strtotime($timestamp);
+    $now = time();
+    $diff = $now - $time;
+    
+    if ($diff < 60) {
+        return "Just now";
+    } elseif ($diff < 3600) {
+        return floor($diff/60) . " minutes ago";
+    } elseif ($diff < 86400) {
+        return floor($diff/3600) . " hours ago";
+    } else {
+        return floor($diff/86400) . " days ago";
+    }
 }
 ?>
 
@@ -137,43 +169,6 @@ if ($announcement && !isset($_SESSION['announcement_shown'])) {
             border-color: #badbcc;
             color: #498428;
         }
-        /* #sidebarToggle {
-            position: fixed;
-            top: 15px;
-            left: 15px;
-            z-index: 1060;
-        }
-
-        @media (max-width: 768px) {
-            #sidebarToggle {
-                left: auto !important;
-                right: 15px !important;
-                top: 15px !important;
-            }
-            .sidebar {
-                position: fixed;
-                top: 0;
-                left: 0;
-                height: 100vh;
-                z-index: 1040;
-                background-color: #2d5516;
-                transform: translateX(-250px);
-                transition: transform 0.3s ease-in-out;
-            }
-            .sidebar.sidebar-collapsed {
-                transform: translateX(0) !important;
-                display: block !important;
-            }
-        }
-        .sidebar-collapsed {
-            display: none !important;
-        }
-        main {
-            transition: margin-left 0.3s ease-in-out;
-        }
-        main.full-width {
-            margin-left: 0 !important;
-        } */
 
         /* Toast notification styling */
         .toast {
@@ -189,16 +184,7 @@ if ($announcement && !isset($_SESSION['announcement_shown'])) {
 </head>
 <body>
     <!-- Display notification toasts if any -->
-    <?php $notificationsHTML = '';
-
-// Example code to populate it
-while ($row = mysqli_fetch_assoc($result)) {
-    $notificationsHTML .= '<li>' . htmlspecialchars($row['message']) . '</li>';
-}
-
-// Then you can use it safely on line 177:
-echo $notificationsHTML;
- ?>
+    <?php echo $notificationsHTML; ?>
     
     <!-- Topbar/Header -->
 <nav class="navbar navbar-expand-lg navbar-dark custom-topbar px-3">

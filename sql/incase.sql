@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: May 16, 2025 at 02:10 PM
+-- Generation Time: May 17, 2025 at 11:01 AM
 -- Server version: 8.0.30
 -- PHP Version: 8.1.10
 
@@ -25,6 +25,30 @@ DELIMITER $$
 --
 -- Procedures
 --
+CREATE DEFINER=`root`@`localhost` PROCEDURE `GetActiveUnviewedAnnouncement` (IN `p_user_id` INT)   BEGIN
+    SELECT `id`, `title`, `body`, `photo`, `start_date`, `end_date`
+    FROM announcements
+    WHERE NOW() BETWEEN start_date AND end_date
+      AND is_active = 1
+      AND id NOT IN (
+        SELECT announcement_id FROM announcement_views WHERE user_id = p_user_id
+      )
+    ORDER BY start_date DESC;
+  END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_unseen_announcement_for_user` (IN `p_user_id` INT)   BEGIN
+    SELECT a.*
+    FROM announcements a
+    WHERE a.start_date <= CURDATE()
+      AND a.end_date >= CURDATE()
+      AND NOT EXISTS (
+        SELECT 1 FROM announcement_views v
+        WHERE v.announcement_id = a.id AND v.user_id = p_user_id
+      )
+    ORDER BY a.created_at DESC
+    LIMIT 1;
+  END$$
+
 CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_CreateAlumniRequest` (IN `p_user_id` INT, IN `p_request_type` VARCHAR(100), IN `p_institute` VARCHAR(50), IN `p_program` VARCHAR(50), IN `p_details` TEXT)   BEGIN
     INSERT INTO alumni_requests (
         user_id, request_type, institute, program, details, status
@@ -54,6 +78,33 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_CreateStudentRequest` (IN `p_use
     -- Return the created request ID
     SELECT LAST_INSERT_ID() AS request_id;
 END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_GetActiveAnnouncementForUser` (IN `p_user_id` INT)   BEGIN
+      SELECT a.*
+      FROM announcements a
+      WHERE a.is_active = 1
+        AND NOW() BETWEEN a.start_date AND a.end_date
+        AND NOT EXISTS (
+            SELECT 1
+            FROM announcement_views av
+            WHERE av.announcement_id = a.id AND av.user_id = p_user_id
+        )
+      ORDER BY a.start_date DESC
+      LIMIT 1;
+  END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_GetActiveAnnouncements` ()   BEGIN
+    SELECT 
+      id,
+      title,
+      photo,
+      description,
+      start_date,
+      end_date
+    FROM announcements
+    WHERE CURDATE() BETWEEN start_date AND end_date
+    ORDER BY start_date DESC;
+  END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_GetAdminDashboardStats` ()   BEGIN
     SELECT 
@@ -299,13 +350,6 @@ CREATE TABLE `alumni_requests` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Dumping data for table `alumni_requests`
---
-
-INSERT INTO `alumni_requests` (`id`, `user_id`, `request_type`, `institute`, `program`, `details`, `status`, `tracking_number`, `pickup_datetime`, `is_seen`, `created_at`, `updated_at`) VALUES
-(1, 4, 'Certificate of Enrollment', 'IC', 'BSIT', 'hi', 'pending', NULL, NULL, 1, '2025-05-11 06:23:49', '2025-05-11 06:24:03');
-
---
 -- Triggers `alumni_requests`
 --
 DELIMITER $$
@@ -339,6 +383,37 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `announcements`
+--
+
+CREATE TABLE `announcements` (
+  `id` int NOT NULL,
+  `title` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `details` text COLLATE utf8mb4_general_ci,
+  `body` text COLLATE utf8mb4_general_ci NOT NULL,
+  `photo` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `is_active` tinyint(1) DEFAULT '1',
+  `start_date` datetime NOT NULL,
+  `end_date` datetime NOT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `announcement_views`
+--
+
+CREATE TABLE `announcement_views` (
+  `id` int NOT NULL,
+  `user_id` int NOT NULL,
+  `announcement_id` int NOT NULL,
+  `viewed_at` datetime DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `notifications`
 --
 
@@ -349,17 +424,6 @@ CREATE TABLE `notifications` (
   `is_read` tinyint(1) DEFAULT '0',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `notifications`
---
-
-INSERT INTO `notifications` (`id`, `user_id`, `message`, `is_read`, `created_at`) VALUES
-(1, 5, 'Your request for Certificate of Enrollment has been updated to: APPROVED', 1, '2025-05-16 13:51:27'),
-(2, 5, 'Your request for Certificate of Enrollment (ID: 1) has been approved. Please pick up your document on May 16, 2025 at 09:51 PM. Your tracking number is: TR-20250516-11414', 1, '2025-05-16 13:51:27'),
-(3, 5, 'Update regarding your approved request (ID: 1): ok na dong', 1, '2025-05-16 13:51:33'),
-(4, 5, 'Your request for Certificate of Enrollment has been updated to: COMPLETED', 1, '2025-05-16 13:51:35'),
-(5, 5, 'Your request for Certificate of Enrollment (ID: 1) has been completed. Thank you for using our service.', 1, '2025-05-16 13:51:35');
 
 -- --------------------------------------------------------
 
@@ -383,13 +447,6 @@ CREATE TABLE `requests` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `requests`
---
-
-INSERT INTO `requests` (`id`, `user_id`, `request_type`, `institute`, `program`, `year_level`, `semester`, `details`, `status`, `tracking_number`, `pickup_datetime`, `is_seen`, `created_at`, `updated_at`) VALUES
-(1, 5, 'Certificate of Enrollment', 'IC', 'BSIT', '1st Year', '1st Semester', 'hi', 'completed', 'TR-20250516-11414', '2025-05-16 21:51:00', 1, '2025-05-16 13:50:38', '2025-05-16 13:51:35');
 
 --
 -- Triggers `requests`
@@ -634,6 +691,20 @@ ALTER TABLE `alumni_requests`
   ADD KEY `user_id` (`user_id`);
 
 --
+-- Indexes for table `announcements`
+--
+ALTER TABLE `announcements`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `announcement_views`
+--
+ALTER TABLE `announcement_views`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `user_announcement_unique` (`user_id`,`announcement_id`),
+  ADD KEY `announcement_id` (`announcement_id`);
+
+--
 -- Indexes for table `notifications`
 --
 ALTER TABLE `notifications`
@@ -680,19 +751,31 @@ ALTER TABLE `admin_notifications`
 -- AUTO_INCREMENT for table `alumni_requests`
 --
 ALTER TABLE `alumni_requests`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `announcements`
+--
+ALTER TABLE `announcements`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `announcement_views`
+--
+ALTER TABLE `announcement_views`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `notifications`
 --
 ALTER TABLE `notifications`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `requests`
 --
 ALTER TABLE `requests`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `system_settings`
@@ -705,6 +788,17 @@ ALTER TABLE `system_settings`
 --
 ALTER TABLE `users`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `announcement_views`
+--
+ALTER TABLE `announcement_views`
+  ADD CONSTRAINT `announcement_views_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `announcement_views_ibfk_2` FOREIGN KEY (`announcement_id`) REFERENCES `announcements` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
