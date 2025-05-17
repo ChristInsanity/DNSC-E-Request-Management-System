@@ -2,8 +2,8 @@
 require_once '../config.php';
 checkAdminAuth();
 
-// Get dashboard statistics using database views
-$result = $conn->query("SELECT * FROM view_admin_dashboard");
+// Get dashboard statistics using stored procedure
+$result = callProcedure($conn, 'sp_GetAdminDashboardStats');
 $stats = $result->fetch_assoc();
 
 $totalRequests = $stats['total_requests'];

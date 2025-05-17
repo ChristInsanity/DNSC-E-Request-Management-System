@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: May 16, 2025 at 02:10 PM
+-- Generation Time: May 11, 2025 at 06:27 AM
 -- Server version: 8.0.30
 -- PHP Version: 8.1.10
 
@@ -20,6 +20,45 @@ SET time_zone = "+00:00";
 --
 -- Database: `dnsc_e-request`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for system settings (MOVED UP)
+--
+
+CREATE TABLE `system_settings` (
+  `id` int NOT NULL,
+  `setting_key` varchar(50) NOT NULL,
+  `setting_value` text,
+  `new_requests_count` int DEFAULT '0',
+  `new_registrations_count` int DEFAULT '0',
+  `last_updated` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `system_settings`
+--
+
+INSERT INTO `system_settings` (`id`, `setting_key`, `setting_value`, `new_requests_count`, `new_registrations_count`) VALUES
+(1, 'system_name', 'DNSC E-Request Management System', 0, 0);
+
+--
+-- Table structure for admin_notifications (MOVED UP)
+--
+
+CREATE TABLE `admin_notifications` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `message` text NOT NULL,
+  `user_id` int DEFAULT NULL,
+  `request_id` int DEFAULT NULL,
+  `request_type` varchar(20) DEFAULT NULL,
+  `is_read` tinyint(1) DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_admin_notif_is_read` (`is_read`),
+  KEY `idx_admin_notif_created` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 DELIMITER $$
 --
@@ -373,22 +412,6 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Table structure for table `admin_notifications`
---
-
-CREATE TABLE `admin_notifications` (
-  `id` int NOT NULL,
-  `message` text NOT NULL,
-  `user_id` int DEFAULT NULL,
-  `request_id` int DEFAULT NULL,
-  `request_type` varchar(20) DEFAULT NULL,
-  `is_read` tinyint(1) DEFAULT '0',
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `alumni_requests`
 --
 
@@ -414,37 +437,6 @@ CREATE TABLE `alumni_requests` (
 INSERT INTO `alumni_requests` (`id`, `user_id`, `request_type`, `institute`, `program`, `details`, `status`, `tracking_number`, `pickup_datetime`, `is_seen`, `created_at`, `updated_at`) VALUES
 (1, 4, 'Certificate of Enrollment', 'IC', 'BSIT', 'hi', 'pending', NULL, NULL, 1, '2025-05-11 06:23:49', '2025-05-11 06:24:03');
 
---
--- Triggers `alumni_requests`
---
-DELIMITER $$
-CREATE TRIGGER `tr_alumni_request_insert` AFTER INSERT ON `alumni_requests` FOR EACH ROW BEGIN
-    -- Update system settings counter
-    UPDATE system_settings SET new_requests_count = new_requests_count + 1 WHERE id = 1;
-    
-    -- Create notification for admin
-    INSERT INTO admin_notifications (message, request_id, request_type, created_at)
-    VALUES (CONCAT('New alumni request from ID: ', NEW.user_id), NEW.id, 'alumni_request', NOW());
-END
-$$
-DELIMITER ;
-DELIMITER $$
-CREATE TRIGGER `tr_alumni_request_status_update` AFTER UPDATE ON `alumni_requests` FOR EACH ROW BEGIN
-    -- Check if status changed
-    IF NEW.status != OLD.status THEN
-        -- Create notification for user
-        INSERT INTO notifications (user_id, message, is_read, created_at)
-        VALUES (
-            NEW.user_id, 
-            CONCAT('Your request for ', NEW.request_type, ' has been updated to: ', UPPER(NEW.status)),
-            0,
-            NOW()
-        );
-    END IF;
-END
-$$
-DELIMITER ;
-
 -- --------------------------------------------------------
 
 --
@@ -458,17 +450,6 @@ CREATE TABLE `notifications` (
   `is_read` tinyint(1) DEFAULT '0',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `notifications`
---
-
-INSERT INTO `notifications` (`id`, `user_id`, `message`, `is_read`, `created_at`) VALUES
-(1, 5, 'Your request for Certificate of Enrollment has been updated to: APPROVED', 1, '2025-05-16 13:51:27'),
-(2, 5, 'Your request for Certificate of Enrollment (ID: 1) has been approved. Please pick up your document on May 16, 2025 at 09:51 PM. Your tracking number is: TR-20250516-11414', 1, '2025-05-16 13:51:27'),
-(3, 5, 'Update regarding your approved request (ID: 1): ok na dong', 1, '2025-05-16 13:51:33'),
-(4, 5, 'Your request for Certificate of Enrollment has been updated to: COMPLETED', 1, '2025-05-16 13:51:35'),
-(5, 5, 'Your request for Certificate of Enrollment (ID: 1) has been completed. Thank you for using our service.', 1, '2025-05-16 13:51:35');
 
 -- --------------------------------------------------------
 
@@ -492,66 +473,6 @@ CREATE TABLE `requests` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `requests`
---
-
-INSERT INTO `requests` (`id`, `user_id`, `request_type`, `institute`, `program`, `year_level`, `semester`, `details`, `status`, `tracking_number`, `pickup_datetime`, `is_seen`, `created_at`, `updated_at`) VALUES
-(1, 5, 'Certificate of Enrollment', 'IC', 'BSIT', '1st Year', '1st Semester', 'hi', 'completed', 'TR-20250516-11414', '2025-05-16 21:51:00', 1, '2025-05-16 13:50:38', '2025-05-16 13:51:35');
-
---
--- Triggers `requests`
---
-DELIMITER $$
-CREATE TRIGGER `tr_student_request_insert` AFTER INSERT ON `requests` FOR EACH ROW BEGIN
-    -- Update system settings counter
-    UPDATE system_settings SET new_requests_count = new_requests_count + 1 WHERE id = 1;
-    
-    -- Create notification for admin
-    INSERT INTO admin_notifications (message, request_id, request_type, created_at)
-    VALUES (CONCAT('New student request from ID: ', NEW.user_id), NEW.id, 'student_request', NOW());
-END
-$$
-DELIMITER ;
-DELIMITER $$
-CREATE TRIGGER `tr_student_request_status_update` AFTER UPDATE ON `requests` FOR EACH ROW BEGIN
-    -- Check if status changed
-    IF NEW.status != OLD.status THEN
-        -- Create notification for user
-        INSERT INTO notifications (user_id, message, is_read, created_at)
-        VALUES (
-            NEW.user_id, 
-            CONCAT('Your request for ', NEW.request_type, ' has been updated to: ', UPPER(NEW.status)),
-            0,
-            NOW()
-        );
-    END IF;
-END
-$$
-DELIMITER ;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `system_settings`
---
-
-CREATE TABLE `system_settings` (
-  `id` int NOT NULL,
-  `setting_key` varchar(50) NOT NULL,
-  `setting_value` text,
-  `new_requests_count` int DEFAULT '0',
-  `new_registrations_count` int DEFAULT '0',
-  `last_updated` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `system_settings`
---
-
-INSERT INTO `system_settings` (`id`, `setting_key`, `setting_value`, `new_requests_count`, `new_registrations_count`, `last_updated`) VALUES
-(1, 'system_name', 'DNSC E-Request Management System', 1, 0, '2025-05-16 13:50:38');
 
 -- --------------------------------------------------------
 
@@ -623,153 +544,8 @@ INSERT INTO `users` (`id`, `stud_id`, `full_name`, `institute`, `program`, `emai
 (3, '2023-00069', 'Don Dominick Enargan', 'IC', 'BSIT', 'enargan.dondominick@dnsc.edu.ph', '$2y$10$qrkRrB/jvZOriAYKTVxpJO3sQ3BSFl//a2AFFWUWRg8oudUrS2aw6', 'student', 'student', '682042e9da46d_ako.jpg', 'approved_student', NULL, '2025-05-11 14:26:10', NULL, '2025-05-11 06:25:45');
 
 --
--- Triggers `users`
---
-DELIMITER $$
-CREATE TRIGGER `tr_user_registration` AFTER INSERT ON `users` FOR EACH ROW BEGIN
-    -- Check if not an admin account
-    IF NEW.role IS NULL OR NEW.role != 'admin' THEN
-        -- Update system settings counter for new registrations
-        UPDATE system_settings SET new_registrations_count = new_registrations_count + 1 WHERE id = 1;
-        
-        -- Create admin notification
-        INSERT INTO admin_notifications (message, user_id, request_type, created_at)
-        VALUES (CONCAT('New user registration: ', NEW.full_name), NEW.id, 'registration', NOW());
-    END IF;
-END
-$$
-DELIMITER ;
-
--- --------------------------------------------------------
-
---
--- Stand-in structure for view `view_admin_dashboard`
--- (See below for the actual view)
---
-CREATE TABLE `view_admin_dashboard` (
-`approved_requests` bigint
-,`completed_requests` bigint
-,`new_requests` bigint
-,`pending_requests` bigint
-,`total_requests` bigint
-);
-
--- --------------------------------------------------------
-
---
--- Stand-in structure for view `view_alumni_dashboard`
--- (See below for the actual view)
---
-CREATE TABLE `view_alumni_dashboard` (
-`approved_requests` decimal(23,0)
-,`completed_requests` decimal(23,0)
-,`pending_requests` decimal(23,0)
-,`total_requests` bigint
-,`unread_notifications` bigint
-,`user_id` int
-);
-
--- --------------------------------------------------------
-
---
--- Stand-in structure for view `view_alumni_recent_requests`
--- (See below for the actual view)
---
-CREATE TABLE `view_alumni_recent_requests` (
-`created_at` timestamp
-,`id` int
-,`request_type` varchar(100)
-,`status` enum('pending','approved','rejected','completed')
-,`tracking_number` varchar(20)
-,`user_id` int
-);
-
--- --------------------------------------------------------
-
---
--- Stand-in structure for view `view_student_dashboard`
--- (See below for the actual view)
---
-CREATE TABLE `view_student_dashboard` (
-`approved_requests` decimal(23,0)
-,`completed_requests` decimal(23,0)
-,`pending_requests` decimal(23,0)
-,`total_requests` bigint
-,`unread_notifications` bigint
-,`user_id` int
-);
-
--- --------------------------------------------------------
-
---
--- Stand-in structure for view `view_student_recent_requests`
--- (See below for the actual view)
---
-CREATE TABLE `view_student_recent_requests` (
-`created_at` timestamp
-,`id` int
-,`request_type` varchar(100)
-,`status` enum('pending','approved','rejected','completed')
-,`tracking_number` varchar(20)
-,`user_id` int
-);
-
--- --------------------------------------------------------
-
---
--- Structure for view `view_admin_dashboard`
---
-DROP TABLE IF EXISTS `view_admin_dashboard`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `view_admin_dashboard`  AS SELECT ((select count(0) from `requests`) + (select count(0) from `alumni_requests`)) AS `total_requests`, ((select count(0) from `requests` where (`requests`.`status` = 'pending')) + (select count(0) from `alumni_requests` where (`alumni_requests`.`status` = 'pending'))) AS `pending_requests`, ((select count(0) from `requests` where (`requests`.`status` = 'approved')) + (select count(0) from `alumni_requests` where (`alumni_requests`.`status` = 'approved'))) AS `approved_requests`, ((select count(0) from `requests` where (`requests`.`status` = 'completed')) + (select count(0) from `alumni_requests` where (`alumni_requests`.`status` = 'completed'))) AS `completed_requests`, ((select count(0) from `requests` where ((`requests`.`status` = 'pending') and (`requests`.`is_seen` = 0))) + (select count(0) from `alumni_requests` where ((`alumni_requests`.`status` = 'pending') and (`alumni_requests`.`is_seen` = 0)))) AS `new_requests` ;
-
--- --------------------------------------------------------
-
---
--- Structure for view `view_alumni_dashboard`
---
-DROP TABLE IF EXISTS `view_alumni_dashboard`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `view_alumni_dashboard`  AS SELECT `u`.`id` AS `user_id`, count(`r`.`id`) AS `total_requests`, sum((case when (`r`.`status` = 'pending') then 1 else 0 end)) AS `pending_requests`, sum((case when (`r`.`status` = 'approved') then 1 else 0 end)) AS `approved_requests`, sum((case when (`r`.`status` = 'completed') then 1 else 0 end)) AS `completed_requests`, (select count(0) from `notifications` `n` where ((`n`.`user_id` = `u`.`id`) and (`n`.`is_read` = 0))) AS `unread_notifications` FROM (`users` `u` left join `alumni_requests` `r` on((`u`.`id` = `r`.`user_id`))) WHERE (`u`.`role` = 'alumni') GROUP BY `u`.`id` ;
-
--- --------------------------------------------------------
-
---
--- Structure for view `view_alumni_recent_requests`
---
-DROP TABLE IF EXISTS `view_alumni_recent_requests`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `view_alumni_recent_requests`  AS SELECT `r`.`id` AS `id`, `r`.`user_id` AS `user_id`, `r`.`request_type` AS `request_type`, `r`.`status` AS `status`, `r`.`tracking_number` AS `tracking_number`, `r`.`created_at` AS `created_at` FROM `alumni_requests` AS `r` ORDER BY `r`.`created_at` DESC ;
-
--- --------------------------------------------------------
-
---
--- Structure for view `view_student_dashboard`
---
-DROP TABLE IF EXISTS `view_student_dashboard`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `view_student_dashboard`  AS SELECT `u`.`id` AS `user_id`, count(`r`.`id`) AS `total_requests`, sum((case when (`r`.`status` = 'pending') then 1 else 0 end)) AS `pending_requests`, sum((case when (`r`.`status` = 'approved') then 1 else 0 end)) AS `approved_requests`, sum((case when (`r`.`status` = 'completed') then 1 else 0 end)) AS `completed_requests`, (select count(0) from `notifications` `n` where ((`n`.`user_id` = `u`.`id`) and (`n`.`is_read` = 0))) AS `unread_notifications` FROM (`users` `u` left join `requests` `r` on((`u`.`id` = `r`.`user_id`))) WHERE (`u`.`role` = 'student') GROUP BY `u`.`id` ;
-
--- --------------------------------------------------------
-
---
--- Structure for view `view_student_recent_requests`
---
-DROP TABLE IF EXISTS `view_student_recent_requests`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `view_student_recent_requests`  AS SELECT `r`.`id` AS `id`, `r`.`user_id` AS `user_id`, `r`.`request_type` AS `request_type`, `r`.`status` AS `status`, `r`.`tracking_number` AS `tracking_number`, `r`.`created_at` AS `created_at` FROM `requests` AS `r` ORDER BY `r`.`created_at` DESC ;
-
---
 -- Indexes for dumped tables
 --
-
---
--- Indexes for table `admin_notifications`
---
-ALTER TABLE `admin_notifications`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_admin_notif_is_read` (`is_read`),
-  ADD KEY `idx_admin_notif_created` (`created_at`);
 
 --
 -- Indexes for table `alumni_requests`
@@ -794,13 +570,6 @@ ALTER TABLE `requests`
   ADD KEY `idx_requests_created_at` (`created_at`);
 
 --
--- Indexes for table `system_settings`
---
-ALTER TABLE `system_settings`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `setting_key` (`setting_key`);
-
---
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
@@ -808,14 +577,15 @@ ALTER TABLE `users`
   ADD KEY `idx_users_email` (`email`);
 
 --
--- AUTO_INCREMENT for dumped tables
+-- Indexes for table `system_settings`
 --
+ALTER TABLE `system_settings`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `setting_key` (`setting_key`);
 
 --
--- AUTO_INCREMENT for table `admin_notifications`
+-- AUTO_INCREMENT for dumped tables
 --
-ALTER TABLE `admin_notifications`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `alumni_requests`
@@ -827,13 +597,19 @@ ALTER TABLE `alumni_requests`
 -- AUTO_INCREMENT for table `notifications`
 --
 ALTER TABLE `notifications`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `requests`
 --
 ALTER TABLE `requests`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `users`
+--
+ALTER TABLE `users`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `system_settings`
@@ -842,10 +618,91 @@ ALTER TABLE `system_settings`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
--- AUTO_INCREMENT for table `users`
+-- Triggers for request management
 --
-ALTER TABLE `users`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+DELIMITER $$
+
+-- Trigger: When a student creates a new request
+CREATE TRIGGER tr_student_request_insert
+AFTER INSERT ON requests
+FOR EACH ROW
+BEGIN
+    -- Update system settings counter
+    UPDATE system_settings SET new_requests_count = new_requests_count + 1 WHERE id = 1;
+    
+    -- Create notification for admin
+    INSERT INTO admin_notifications (message, request_id, request_type, created_at)
+    VALUES (CONCAT('New student request from ID: ', NEW.user_id), NEW.id, 'student_request', NOW());
+END$$
+
+-- Trigger: When an alumni creates a new request
+CREATE TRIGGER tr_alumni_request_insert
+AFTER INSERT ON alumni_requests
+FOR EACH ROW
+BEGIN
+    -- Update system settings counter
+    UPDATE system_settings SET new_requests_count = new_requests_count + 1 WHERE id = 1;
+    
+    -- Create notification for admin
+    INSERT INTO admin_notifications (message, request_id, request_type, created_at)
+    VALUES (CONCAT('New alumni request from ID: ', NEW.user_id), NEW.id, 'alumni_request', NOW());
+END$$
+
+-- Trigger: When a student request status changes
+CREATE TRIGGER tr_student_request_status_update
+AFTER UPDATE ON requests
+FOR EACH ROW
+BEGIN
+    -- Check if status changed
+    IF NEW.status != OLD.status THEN
+        -- Create notification for user
+        INSERT INTO notifications (user_id, message, is_read, created_at)
+        VALUES (
+            NEW.user_id, 
+            CONCAT('Your request for ', NEW.request_type, ' has been updated to: ', UPPER(NEW.status)),
+            0,
+            NOW()
+        );
+    END IF;
+END$$
+
+-- Trigger: When an alumni request status changes
+CREATE TRIGGER tr_alumni_request_status_update
+AFTER UPDATE ON alumni_requests
+FOR EACH ROW
+BEGIN
+    -- Check if status changed
+    IF NEW.status != OLD.status THEN
+        -- Create notification for user
+        INSERT INTO notifications (user_id, message, is_read, created_at)
+        VALUES (
+            NEW.user_id, 
+            CONCAT('Your request for ', NEW.request_type, ' has been updated to: ', UPPER(NEW.status)),
+            0,
+            NOW()
+        );
+    END IF;
+END$$
+
+-- Trigger: User registration tracking
+CREATE TRIGGER tr_user_registration
+AFTER INSERT ON users
+FOR EACH ROW
+BEGIN
+    -- Check if not an admin account
+    IF NEW.role IS NULL OR NEW.role != 'admin' THEN
+        -- Update system settings counter for new registrations
+        UPDATE system_settings SET new_registrations_count = new_registrations_count + 1 WHERE id = 1;
+        
+        -- Create admin notification
+        INSERT INTO admin_notifications (message, user_id, request_type, created_at)
+        VALUES (CONCAT('New user registration: ', NEW.full_name), NEW.id, 'registration', NOW());
+    END IF;
+END$$
+
+DELIMITER ;
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

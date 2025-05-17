@@ -2,30 +2,17 @@
 require_once '../config.php';
 checkStudentAuth();
 
-// Get stats using database views
+// Get stats for using stored procedure on dashbord
 $user_id = $_SESSION['user_id'];
 
-// Use the view_student_dashboard view to get statistics
-$stmt = $conn->prepare("SELECT * FROM view_student_dashboard WHERE user_id = ?");
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$result = $stmt->get_result();
+$result = callProcedure($conn, 'sp_GetUserRequestsStats', 'i', [$user_id]);
+$stats = $result->fetch_assoc();
 
-if ($result->num_rows > 0) {
-    $stats = $result->fetch_assoc();
-    $totalRequests = $stats['total_requests'];
-    $pendingRequests = $stats['pending_requests'];
-    $approvedRequests = $stats['approved_requests'];
-    $completedRequests = $stats['completed_requests'];
-    $unreadNotifications = $stats['unread_notifications'];
-} else {
-    // Default values if user has no records
-    $totalRequests = 0;
-    $pendingRequests = 0;
-    $approvedRequests = 0;
-    $completedRequests = 0;
-    $unreadNotifications = 0;
-}
+$totalRequests = $stats['total_requests'];
+$pendingRequests = $stats['pending_requests'];
+$approvedRequests = $stats['approved_requests'];
+$completedRequests = $stats['completed_requests'];
+$unreadNotifications = $stats['unread_notifications'];
 
 // Get notifications (these can be triggered from backend)
 $stmt = $conn->prepare("SELECT * FROM notifications WHERE user_id = ? AND is_read = 0 ORDER BY created_at DESC");
@@ -33,11 +20,9 @@ $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $notifications = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
-// Get latest requests using view instead of stored procedure
-$stmt = $conn->prepare("SELECT * FROM view_student_recent_requests WHERE user_id = ? ORDER BY created_at DESC LIMIT 5");
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$latestRequests = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+// Get latest requests using stored procedure
+$result = callProcedure($conn, 'sp_GetUserRecentRequests', 'ii', [$user_id, 5]);
+$latestRequests = $result->fetch_all(MYSQLI_ASSOC);
 
 $announcement = null;
 
