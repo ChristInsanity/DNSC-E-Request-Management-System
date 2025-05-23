@@ -125,7 +125,11 @@ $result = $conn->query("SELECT * FROM announcements ORDER BY created_at DESC");
                             <i class="fas fa-user-check me-2"></i> Registration List
                         </a>
                     </li>
-                     </li>
+                      <li class="nav-item">
+                        <a class="nav-link" href="admin_contact_messages.php">
+                            <i class="fas fa-envelope me-2"></i> Messages
+                        </a>
+                    </li>
                      <li class="nav-item">
                         <a class="nav-link" href="create_announcement.php">
                             <i class="fas fa-bullhorn me-2"></i>
@@ -164,6 +168,7 @@ $result = $conn->query("SELECT * FROM announcements ORDER BY created_at DESC");
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                 <h1 class="h2">Manage Announcements</h1>
                 <div class="btn-toolbar mb-2 mb-md-0">
+                    
                     <div class="btn-group me-2">
                         <span class="btn btn-sm btn-outline-secondary">Welcome, <?php echo $_SESSION['full_name']; ?></span>
                     </div>

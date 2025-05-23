@@ -249,11 +249,12 @@ function getTimeAgo($timestamp) {
               <?php endif; ?>
             </a>
           </li>
-          <li class="nav-item mt-4">
-            <a class="nav-link" href="../logout.php">
-              <i class="fas fa-sign-out-alt me-2"></i> Logout
-            </a>
-          </li>
+          <li class="nav-item">
+                            <a class="nav-link" href="contact.php">
+                                <i class="fas fa-envelope me-2">
+                                </i> Contact Admin
+                            </a>
+                        </li>
         </ul>
       </div>
 
@@ -416,26 +417,33 @@ function getTimeAgo($timestamp) {
   </script>
 <?php if (!empty($announcements) && !isset($_SESSION['announcement_shown'])): ?>
 <?php foreach ($announcements as $index => $announcement): ?>
-  <?php $_SESSION['announcement_shown'] = true; ?>
+<?php $_SESSION['announcement_shown'] = true; ?>
 <div class="modal fade" id="announcementModal<?php echo $index; ?>" tabindex="-1" aria-labelledby="announcementModalLabel<?php echo $index; ?>" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header bg-success text-white">
-        <h5 class="modal-title" id="announcementModalLabel<?php echo $index; ?>"><?php echo htmlspecialchars($announcement['title']); ?></h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" data-index="<?php echo $index; ?>"></button>
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content shadow-lg border-0 rounded-4">
+      <div class="modal-header bg-success text-white rounded-top-4 px-4 py-3">
+        <h5 class="modal-title fw-semibold" id="announcementModalLabel<?php echo $index; ?>">
+          <i class="fas fa-bullhorn me-2"></i> <?php echo htmlspecialchars($announcement['title']); ?>
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" data-index="<?php echo $index; ?>"></button>
       </div>
-      <div class="modal-body">
+      <div class="modal-body p-4">
         <?php if (!empty($announcement['photo'])): ?>
-          <img src="../<?php echo htmlspecialchars($announcement['photo']); ?>" class="img-fluid mb-3" alt="Announcement Image">
-        <?php  endif; ?>
-        <p><?php echo nl2br(htmlspecialchars($announcement['body'])); ?></p>
-        <p class="text-muted small">
-          Active from <?php echo date('F j, Y', strtotime($announcement['start_date'])); ?>
-          to <?php echo date('F j, Y', strtotime($announcement['end_date'])); ?>
+          <div class="mb-3 text-center">
+            <img src="../<?php echo htmlspecialchars($announcement['photo']); ?>" class="img-fluid rounded-3 shadow-sm" style="max-height: 300px; object-fit: cover;" alt="Announcement Image">
+          </div>
+        <?php endif; ?>
+        <p class="fs-6"><?php echo nl2br(htmlspecialchars($announcement['body'])); ?></p>
+        <p class="text-muted small mt-4">
+          <i class="far fa-calendar-alt me-1"></i>
+          Active from <strong><?php echo date('F j, Y', strtotime($announcement['start_date'])); ?></strong>
+          to <strong><?php echo date('F j, Y', strtotime($announcement['end_date'])); ?></strong>
         </p>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary modal-next" data-bs-dismiss="modal" data-index="<?php echo $index; ?>">Close</button>
+      <div class="modal-footer border-0 px-4 pb-4">
+        <button type="button" class="btn btn-outline-success rounded-pill px-4 modal-next" data-bs-dismiss="modal" data-index="<?php echo $index; ?>">
+          Close
+        </button>
       </div>
     </div>
   </div>
@@ -457,10 +465,9 @@ function getTimeAgo($timestamp) {
       if (current < modals.length) {
         modals[current].show();
 
-        // Send AJAX to mark viewed
+        // Send AJAX to mark as viewed
         fetch('mark_announcement_viewed.php?id=' + announcements[current].id);
 
-        // When closed, show next one
         const modalElement = document.getElementById('announcementModal' + current);
         modalElement.addEventListener('hidden.bs.modal', () => {
           current++;
@@ -473,7 +480,6 @@ function getTimeAgo($timestamp) {
   });
 </script>
 <?php endif; ?>
-
 
 </body>
 </html>

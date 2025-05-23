@@ -111,10 +111,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["confirm_submit"])) {
                             <input type="date" class="form-control" name="end_date" required>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label">Photo (optional)</label>
-                            <input type="file" class="form-control" name="photo" accept="image/*">
-                        </div>
+                      <div class="mb-3">
+    <label class="form-label">Photo (optional)</label>
+    <input type="file" class="form-control" name="photo" accept="image/*" id="photoInput">
+<img id="photoPreview" src="#" alt="Image Preview"
+ class="img-fluid mt-3 rounded border" style="max-height: 100px; display: none; cursor: pointer;"
+ data-bs-toggle="modal" data-bs-target="#photoModal">
+</div>
+
 
                         <input type="hidden" name="confirm_submit" value="1">
 
@@ -135,6 +139,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["confirm_submit"])) {
                                         <p><strong>Body:</strong> <span id="preview_body"></span></p>
                                         <p><strong>Start Date:</strong> <span id="preview_start"></span></p>
                                         <p><strong>End Date:</strong> <span id="preview_end"></span></p>
+                                        
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Edit</button>
@@ -167,6 +172,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["confirm_submit"])) {
         </div>
     </div>
 </div>
+<!-- Photo Preview Modal -->
+<div class="modal fade" id="photoModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Photo Preview</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="modalImage" class="modal-img img-fluid" />
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <script>
@@ -188,5 +212,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["confirm_submit"])) {
         previewModal.show();
     });
 </script>
+<script>
+    const photoInput = document.getElementById("photoInput");
+    const photoPreview = document.getElementById("photoPreview");
+    const modalImage = document.getElementById("modalImage");
+
+    photoInput.addEventListener("change", function () {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                photoPreview.src = e.target.result;
+                photoPreview.style.display = "block";
+                modalImage.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        } else {
+            photoPreview.style.display = "none";
+            photoPreview.src = "#";
+            modalImage.src = "#";
+        }
+    });
+</script>
+
+
+
 </body>
 </html>

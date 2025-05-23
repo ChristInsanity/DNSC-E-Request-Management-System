@@ -120,7 +120,8 @@ if ($id > 0) {
                 <input type="file" name="photo" class="form-control" onchange="previewImage(this)">
                 <div class="mt-2">
                     <p>Current Photo:</p>
-                    <img id="preview" src="../<?= htmlspecialchars($photo_path) ?>" style="max-height:100px;" alt="Current Photo">
+                    <img id="preview" src="../<?= htmlspecialchars($photo_path) ?>"
+                     style="max-height:100px; cursor:pointer;" alt="Current Photo" onclick="showPhotoModal(this.src)">
                 </div>
             </div>
             
@@ -128,6 +129,22 @@ if ($id > 0) {
             <a href="manage_announcements.php" class="btn btn-secondary">Cancel</a>
         </form>
     </div>
+<!-- Photo Preview Modal -->
+<div class="modal fade" id="photoModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Photo Preview</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="modalImage" class="modal-img img-fluid" />
+            </div>
+        </div>
+    </div>
+</div>
 
     <script>
         function previewImage(input) {
@@ -141,5 +158,13 @@ if ($id > 0) {
             }
         }
     </script>
+    <script>
+    function showPhotoModal(src) {
+        document.getElementById('modalImage').src = src;
+        const modal = new bootstrap.Modal(document.getElementById('photoModal'));
+        modal.show();
+    }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
