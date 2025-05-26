@@ -140,6 +140,11 @@ $unread_count = $unread_query->fetch_assoc()['unread'];
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="admin_contact_messages.php">
+                            <i class="fas fa-envelope me-2"></i> Messages
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="create_announcement.php">
                             <i class="fas fa-bullhorn me-2"></i>
                             Create Announcement

@@ -152,7 +152,12 @@ $unread_count = $stmt->get_result()->fetch_assoc()['unread'];
                             <?php endif; ?>
                         </a>
                     </li>
-                    <!-- Logout removed from sidebar -->
+                     <li class="nav-item">
+                            <a class="nav-link" href="contact.php">
+                                <i class="fas fa-envelope me-2">
+                                </i> Contact Admin
+                            </a>
+                        </li>
                 </ul>
             </div>
         </div>
@@ -183,20 +188,43 @@ $unread_count = $stmt->get_result()->fetch_assoc()['unread'];
                         <div class="list-group list-group-flush">
                             <?php foreach ($notifications as $notification): ?>
                                 <div class="list-group-item d-flex justify-content-between align-items-start <?php echo !$notification['is_read'] ? 'bg-light' : ''; ?>">
-                                    <div>
+                                       <div>
                                         <h6>
                                             <?php if (!$notification['is_read']): ?>
                                                 <span class="badge bg-success me-2">New</span>
                                             <?php endif; ?>
-                                            Request Update
+                                            <?php if (strpos($notification['message'], 'Reply from Admin') === 0): ?>
+                                                Admin Response
+                                            <?php else: ?>
+                                                Request Update
+                                            <?php endif; ?>
                                         </h6>
-                                        <p class="mb-1"><?php echo htmlspecialchars($notification['message']); ?></p>
-                                        <small class="text-muted"><?php echo date('M d, Y h:i A', strtotime($notification['created_at'])); ?></small>
-                                        <?php
-                                        if (preg_match('/ID:\s*(\d+)/', $notification['message'], $matches)) {
-                                            echo '<br><a href="view_request.php?id=' . $matches[1] . '" class="btn btn-sm btn-outline-primary mt-2 view-request" data-notification-id="' . $notification['id'] . '">View Request</a>';
-                                        }
-                                        ?>
+
+                                        <?php if (strpos($notification['message'], 'Reply from Admin') === 0): ?>
+                                            <div class="p-3 rounded border bg-light">
+                                                <?php
+                                                    // Remove the "Reply from Admin" line and preserve formatting
+                                    $replyBody = preg_replace('/^Reply from Admin\s*/', '', $notification['message']);
+                                    $replyBody = preg_replace('/ID:\s*\d+.*$/m', '', $replyBody);
+
+                                                echo nl2br($replyBody);
+                                                ?>
+                                            </div>
+                                        <?php else: ?>
+                                            <p class="mb-1"><?php echo htmlspecialchars($notification['message']); ?></p>
+                                        <?php endif; ?>
+
+                                        <small class="text-muted">
+                                            <?php echo date('M d, Y h:i A', strtotime($notification['created_at'])); ?>
+                                        </small>
+
+                                    <?php
+                                    // Only show view request button if it's NOT an admin response and contains an ID
+                                    if (strpos($notification['message'], 'Reply from Admin') !== 0 &&
+                                        preg_match('/ID:\s*(\d+)/', $notification['message'], $matches)) {
+                                        echo '<br><a href="view_request.php?id=' . $matches[1] . '" class="btn btn-sm btn-outline-primary mt-2 view-request" data-notification-id="' . $notification['id'] . '">View Request</a>';
+                                    }
+                                    ?>
                                     </div>
                                     <div>
                                         <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal<?php echo $notification['id']; ?>">Delete</button>

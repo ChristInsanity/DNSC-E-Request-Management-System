@@ -146,6 +146,12 @@ $announcements = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                                 <i class="fas fa-bell me-2"></i> Notifications
                             </a>
                         </li>
+                         <li class="nav-item">
+                            <a class="nav-link" href="contact.php">
+                                <i class="fas fa-envelope me-2">
+                                </i> Contact Admin
+                            </a>
+                        </li>
                     </ul>
                 </div>
     </div>  
@@ -195,24 +201,24 @@ $announcements = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 <!-- Modal for Announcement Details -->
 <div class="modal fade" id="announcementModal" tabindex="-1" aria-labelledby="announcementModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="announcementModalLabel">Announcement Details</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal-content shadow-lg rounded-4 border-0">
+      <div class="modal-header bg-success text-white rounded-top-4">
+        <h5 class="modal-title fw-semibold" id="announcementModalLabel">Announcement Details</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body">
-        <h3 id="modal-title"></h3>
-        <p class="text-muted" id="modal-dates"></p>
-        <img id="modal-photo" src="" alt="Announcement Image" class="img-fluid mb-3 rounded" style="display:none; max-height: 400px; object-fit: contain;">
-        <p id="modal-body-text"></p>
+      <div class="modal-body p-4">
+        <h3 id="modal-title" class="text-success fw-bold"></h3>
+        <p class="text-muted mb-3" id="modal-dates"></p>
+        <img id="modal-photo" src="" alt="Announcement Image" class="img-fluid mb-3 rounded shadow-sm" style="display:none; max-height: 400px; object-fit: contain;">
+        <p id="modal-body-text" class="lh-lg"></p>
       </div>
-      <div class="modal-footer">
+      <div class="modal-footer bg-light rounded-bottom-4">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
       </div>
     </div>
-      </main>
   </div>
 </div>
+
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <script>

@@ -70,6 +70,8 @@ function sanitize($data) {
     return $data;
 }
 
+
+
 /**
  * Call a stored procedure with parameters
  * 
@@ -80,41 +82,39 @@ function sanitize($data) {
  * @return mysqli_result|bool Result object or boolean
  */
 function callProcedure($conn, $procedure, $types = '', $params = []) {
-    // Handle empty parameters case
     if (empty($params)) {
         $query = "CALL $procedure()";
         $stmt = $conn->prepare($query);
     } else {
         // Special case for sp_UpdateRequestStatus which needs 5 parameters
         if ($procedure === 'sp_UpdateRequestStatus' && count($params) === 3) {
-            // When only status is being updated (without tracking number and pickup datetime)
-            // Add NULL values for missing parameters
             $params[] = NULL;
             $params[] = NULL;
-            $types .= 'ss'; // Add two string types for the NULL values
-            
-            $paramStr = str_repeat('?,', count($params) - 1) . '?';
-            $query = "CALL $procedure($paramStr)";
-            
-            $stmt = $conn->prepare($query);
+            $types .= 'ss';
+        }
+
+        $paramStr = str_repeat('?,', count($params) - 1) . '?';
+        $query = "CALL $procedure($paramStr)";
+        $stmt = $conn->prepare($query);
+
+        if (!$stmt) {
+            die("Prepare failed: " . $conn->error);
+        }
+
+        if (!empty($types)) {
             $stmt->bind_param($types, ...$params);
-        } else {
-            $paramStr = str_repeat('?,', count($params) - 1) . '?';
-            $query = "CALL $procedure($paramStr)";
-            
-            $stmt = $conn->prepare($query);
-            
-            if (!empty($types)) {
-                $stmt->bind_param($types, ...$params);
-            }
         }
     }
-    
-    $stmt->execute();
-    $result = $stmt->get_result();
-    
-    return $result;
+
+    if (!$stmt->execute()) {
+        return false;
+    }
+
+    // Try to fetch result only if it's a SELECT-type query
+    $result = @$stmt->get_result();
+    return $result !== false ? $result : true;
 }
+
 
 // Helper function to get status badge class
 function getStatusBadgeClass($status) {
@@ -204,6 +204,8 @@ function createDatabaseViews($conn) {
         ORDER BY r.created_at DESC
     ");
 }
+
+
 
 // Call this function during system initialization or update
 // Uncomment the line below when you want to create/update the views

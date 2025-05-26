@@ -93,6 +93,36 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_GetActiveAnnouncementForUser` (I
       LIMIT 1;
   END$$
 
+
+DELIMITER $$
+
+
+CREATE PROCEDURE `sp_SaveContactMessage` (
+    IN p_name VARCHAR(100),
+    IN p_email VARCHAR(100),
+    IN p_phone VARCHAR(20),
+    IN p_subject VARCHAR(150),
+    IN p_message TEXT
+)
+BEGIN
+    INSERT INTO contact_messages (name, email, phone, subject, message)
+    VALUES (p_name, p_email, p_phone, p_subject, p_message);
+END$$
+
+CREATE PROCEDURE `sp_SaveStudentContactMessage` (
+    IN p_user_id INT,
+    IN p_phone VARCHAR(50),
+    IN p_subject VARCHAR(255),
+    IN p_message TEXT
+)
+BEGIN
+    INSERT INTO student_contact_messages (user_id, phone, subject, message, created_at)
+    VALUES (p_user_id, p_phone, p_subject, p_message, NOW());
+END$$
+
+DELIMITER ;
+
+
 CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_GetActiveAnnouncements` ()   BEGIN
     SELECT 
       id,
@@ -500,6 +530,99 @@ BEGIN
 END$$
 DELIMITER ;
 
+DELIMITER $$
+
+CREATE PROCEDURE sp_GetContactMessageById(IN p_id INT)
+BEGIN
+    SELECT 
+        cm.id,
+        NULL AS user_id,
+        cm.name,
+        cm.email,
+        cm.phone,
+        cm.subject,
+        cm.message,
+        cm.created_at,
+        cm.role
+    FROM contact_messages cm
+    WHERE cm.id = p_id
+
+    UNION ALL
+
+    SELECT 
+        scm.id,
+        scm.user_id,
+        u.name,
+        u.email,
+        scm.phone,
+        scm.subject,
+        scm.message,
+        scm.created_at,
+        'student' AS role
+    FROM student_contact_messages scm
+    JOIN users u ON scm.user_id = u.id
+    WHERE scm.id = p_id
+
+    UNION ALL
+
+    SELECT 
+        acm.id,
+        acm.user_id,
+        a.name,
+        a.email,
+        acm.phone,
+        acm.subject,
+        acm.message,
+        acm.created_at,
+        'alumni' AS role
+    FROM alumni_contact_messages acm
+    JOIN alumni a ON acm.user_id = a.id
+    WHERE acm.id = p_id
+    LIMIT 1; -- Just in case
+
+END$$
+
+DELIMITER ;
+
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_GetAllContactMessagesPaged(
+    IN p_start INT,
+    IN p_limit INT
+)
+BEGIN
+    -- Return paginated unified contact messages with user type
+    
+    SELECT SQL_CALC_FOUND_ROWS
+        id,
+        name,
+        email,
+        subject,
+        created_at,
+        role
+    FROM (
+        SELECT id, name, email, subject, created_at, 'guest' AS role FROM contact_messages
+        UNION ALL
+        SELECT scm.id, u.name, u.email, scm.subject, scm.created_at, 'student' AS role
+        FROM student_contact_messages scm
+        JOIN users u ON scm.user_id = u.id
+        UNION ALL
+        SELECT acm.id, a.name, a.email, acm.subject, acm.created_at, 'alumni' AS role
+        FROM alumni_contact_messages acm
+        JOIN alumni a ON acm.user_id = a.id
+    ) AS combined_messages
+    ORDER BY created_at DESC
+    LIMIT p_start, p_limit;
+
+    -- Return total count separately
+    SELECT FOUND_ROWS() AS total_records;
+END$$
+
+DELIMITER ;
+
+
+
 -- --------------------------------------------------------
 
 --
@@ -545,6 +668,32 @@ CREATE TABLE `users` (
   `rejected_at` datetime DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `contact_messages` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  
+  -- For guests who don't have user_id:
+  `name` VARCHAR(100) DEFAULT NULL,
+  `email` VARCHAR(100) DEFAULT NULL,
+  
+  -- For both guests and users:
+  `phone` VARCHAR(50) DEFAULT NULL,
+  `subject` VARCHAR(255) NOT NULL,
+  `message` TEXT NOT NULL,
+  
+  -- If user is logged in (student or alumni), this links to users table
+  `user_id` INT DEFAULT NULL,
+  
+  -- Store role to quickly identify the sender type (e.g., 'guest', 'student', 'alumni')
+  `role` VARCHAR(20) NOT NULL DEFAULT 'guest',
+  
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  
+  PRIMARY KEY (`id`),
+  
+  FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 
 --
 -- Dumping data for table `users`

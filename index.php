@@ -432,6 +432,9 @@ if (isset($_SESSION['user_id'])) {
                     <li class="nav-item">
                         <a class="nav-link" href="#team">Our Team</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/contact.php">Contact Us</a>
+                    </li>
                     <li class="nav-item ms-lg-2">
                         <a class="btn btn-success" href="login.php">
                             <i class="fas fa-sign-in-alt me-1"></i> Login

@@ -186,7 +186,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['registerbtn'])) {
                                   <span aria-hidden="true">&times;</span>
                                 </button>
                             </div>
-                            <div class="modal-body text-center">
+                                <div class="modal-body text-center">
                                 <img id="modal-photo" class="modal-img" />
                             </div>
                         </div>

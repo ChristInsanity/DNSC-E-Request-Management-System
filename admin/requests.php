@@ -89,7 +89,11 @@ usort($allRequests, function($a, $b) {
                     <li class="nav-item"><a class="nav-link" href="completed.php"><i class="fas fa-check-double me-2"></i>Completed Requests</a></li>
                     <li class="nav-item">
                         <a class="nav-link" href="registration_list.php">
-                            <i class="fas fa-user-check me-2"></i> Registration List
+                            <i class="fas fa-user-check me-2"></i> Registration List </a>
+                    </li>
+                     <li class="nav-item">
+                        <a class="nav-link" href="admin_contact_messages.php">
+                            <i class="fas fa-envelope me-2"></i> Messages
                         </a>
                     </li>
                     <li class="nav-item">

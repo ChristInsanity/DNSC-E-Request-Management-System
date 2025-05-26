@@ -131,6 +131,12 @@ $total_pages = ceil($total_records / $limit);
                                 Notifications
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="contact.php">
+                                <i class="fas fa-envelope me-2">
+                                </i> Contact Admin
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </div>

@@ -132,6 +132,11 @@ $unseenCount = $countStmt->get_result()->fetch_assoc()['unseen_count'];
                             <i class="fas fa-user-check me-2"></i> Registration List
                         </a>
                     </li>
+                     <li class="nav-item">
+                        <a class="nav-link" href="admin_contact_messages.php">
+                            <i class="fas fa-envelope me-2"></i> Messages
+                        </a>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link" href="create_announcement.php">
                             <i class="fas fa-bullhorn me-2"></i>

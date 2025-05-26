@@ -272,3 +272,33 @@ BEGIN
 END //
 
 DELIMITER ;
+
+DELIMITER $$
+
+CREATE PROCEDURE `sp_SaveContactMessage` (
+    IN p_name VARCHAR(100),
+    IN p_email VARCHAR(100),
+    IN p_phone VARCHAR(20),
+    IN p_subject VARCHAR(150),
+    IN p_message TEXT
+)
+BEGIN
+    INSERT INTO contact_messages (name, email, phone, subject, message)
+    VALUES (p_name, p_email, p_phone, p_subject, p_message);
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE PROCEDURE `sp_GetContactMessageById` (
+    IN p_id INT
+)
+BEGIN
+    SELECT id, name, email, phone, subject, message, created_at
+    FROM contact_messages
+    WHERE id = p_id;
+END$$
+
+DELIMITER ;
+
