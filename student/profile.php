@@ -28,6 +28,7 @@ $user = $stmt->get_result()->fetch_assoc();
                 <p><strong>Email:</strong> <?php echo htmlspecialchars($user['email']); ?></p>
                 <p><strong>Member Since:</strong> <?php echo date('M d, Y', strtotime($user['created_at'])); ?></p>
                 <a href="dashboard.php" class="btn btn-primary">Back to Dashboard</a>
+                <!-- <p> hi</p> -->
             </div>
         </div>
     </div>
